@@ -20,7 +20,7 @@ func apiFlagSet() *flag.FlagSet {
 	fs.String("log_level", "info", "lowest level of log messages to print")
 
 	// App settings
-	fs.String("http_address", "0.0.0.0:4150", "Address of the HTTP server")
+	fs.String("http_address", "0.0.0.0:8000", "Address of the HTTP server")
 	fs.Int("session_duration", 72, "Duration of the default session")
 	fs.Int("session_duration_long", 744, "Duration of the session with the Remember Me option")
 

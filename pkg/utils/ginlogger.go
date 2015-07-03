@@ -27,7 +27,7 @@ func GinLogger(component string, log *logrus.Logger) gin.HandlerFunc {
 			"method":  c.Request.Method,
 			"path":    c.Request.URL.Path,
 			"status":  c.Writer.Status(),
-			"latency": float64(latency) / float64(time.Millisecond),
+			"latency": latency,
 		}
 		if x := c.Errors.ByType(gin.ErrorTypePrivate).String(); x != "" {
 			fields["comment"] = x

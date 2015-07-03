@@ -10,6 +10,10 @@ import (
 	"github.com/pgpst/pgpst/pkg/utils"
 )
 
+func init() {
+	gin.SetMode(gin.ReleaseMode)
+}
+
 type API struct {
 	Options *Options
 
@@ -69,7 +73,11 @@ func (a *API) Main() {
 	router.Use(utils.GinLogger("API", a.Log))
 	router.Use(utils.GinRecovery(a.Raven))
 
-	router.GET("/")
+	// Routes
+	router.GET("/", hello)
+
+	// Log that we're about to start the server
+	a.Log.Info("Starting the server")
 
 	// Start the server
 	if err := router.Run(a.Options.HTTPAddress); err != nil {
