@@ -1,3 +1,9 @@
+.godeps
+apps/pgpst/pgpst
+apps/pgpst-api/pgpst-api
+apps/pgpst-mailer/pgpst-mailer
+dist
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a

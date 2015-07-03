@@ -1,0 +1,166 @@
+{
+	"comment": "",
+	"package": [
+		{
+			"canonical": "code.google.com/p/snappy-go/snappy",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/code.google.com/p/snappy-go/snappy",
+			"revision": "8850bd446ad6",
+			"revisionTime": "2015-02-10T15:23:34+11:00"
+		},
+		{
+			"canonical": "github.com/Sirupsen/logrus",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus",
+			"revision": "21d4508646ae56d79244bd9046c1df63a5fa8c37",
+			"revisionTime": "2015-06-10T05:38:35-04:00"
+		},
+		{
+			"canonical": "github.com/bitly/go-nsq",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/bitly/go-nsq",
+			"revision": "d76cbe0746446bc6ff540042dde4d074a962dfde",
+			"revisionTime": "2015-04-07T20:55:05-07:00"
+		},
+		{
+			"canonical": "github.com/bitly/go-simplejson",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/bitly/go-simplejson",
+			"revision": "18db6e68d8fd9cbf2e8ebe4c81a78b96fd9bf05a",
+			"revisionTime": "2015-03-31T09:46:03-07:00"
+		},
+		{
+			"canonical": "github.com/cenkalti/backoff",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/cenkalti/backoff",
+			"revision": "6c45d6bc1e78d94431dff8fc28a99f20bafa355a",
+			"revisionTime": "2015-05-22T22:36:33+03:00"
+		},
+		{
+			"canonical": "github.com/dancannon/gorethink",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink",
+			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
+			"revisionTime": "2015-06-11T22:12:20+01:00"
+		},
+		{
+			"canonical": "github.com/dancannon/gorethink/encoding",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/encoding",
+			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
+			"revisionTime": "2015-06-11T22:12:20+01:00"
+		},
+		{
+			"canonical": "github.com/dancannon/gorethink/ql2",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/ql2",
+			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
+			"revisionTime": "2015-06-11T22:12:20+01:00"
+		},
+		{
+			"canonical": "github.com/dancannon/gorethink/types",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/types",
+			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
+			"revisionTime": "2015-06-11T22:12:20+01:00"
+		},
+		{
+			"canonical": "github.com/getsentry/raven-go",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/getsentry/raven-go",
+			"revision": "c8f8fb7c415203f52ca882e2661d21bc6dcb54d7",
+			"revisionTime": "2015-04-27T23:59:58-07:00"
+		},
+		{
+			"canonical": "github.com/gin-gonic/gin",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin",
+			"revision": "0316b735c40a353204d8e11257c7e69446a893db",
+			"revisionTime": "2015-07-03T04:20:18+02:00"
+		},
+		{
+			"canonical": "github.com/gin-gonic/gin/binding",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin/binding",
+			"revision": "0316b735c40a353204d8e11257c7e69446a893db",
+			"revisionTime": "2015-07-03T04:20:18+02:00"
+		},
+		{
+			"canonical": "github.com/gin-gonic/gin/render",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin/render",
+			"revision": "0316b735c40a353204d8e11257c7e69446a893db",
+			"revisionTime": "2015-07-03T04:20:18+02:00"
+		},
+		{
+			"canonical": "github.com/golang/protobuf/proto",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/golang/protobuf/proto",
+			"revision": "34a5f244f1c01cdfee8e60324258cfbb97a42aec",
+			"revisionTime": "2015-05-26T11:05:00+10:00"
+		},
+		{
+			"canonical": "github.com/golang/protobuf/proto/proto3_proto",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/golang/protobuf/proto/proto3_proto",
+			"revision": "34a5f244f1c01cdfee8e60324258cfbb97a42aec",
+			"revisionTime": "2015-05-26T11:05:00+10:00"
+		},
+		{
+			"canonical": "github.com/golang/protobuf/proto/testdata",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/golang/protobuf/proto/testdata",
+			"revision": "34a5f244f1c01cdfee8e60324258cfbb97a42aec",
+			"revisionTime": "2015-05-26T11:05:00+10:00"
+		},
+		{
+			"canonical": "github.com/manucorporat/sse",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/manucorporat/sse",
+			"revision": "c142f0f1baea5cef7f98a8a6c222f6134368c1f5",
+			"revisionTime": "2015-06-04T11:11:00+02:00"
+		},
+		{
+			"canonical": "github.com/mattn/go-colorable",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/mattn/go-colorable",
+			"revision": "40e4aedc8fabf8c23e040057540867186712faa5",
+			"revisionTime": "2015-06-26T00:46:42+09:00"
+		},
+		{
+			"canonical": "github.com/mattn/go-isatty",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/mattn/go-isatty",
+			"revision": "6152ce208cfa13d58f065348a3312b4160fb98d1",
+			"revisionTime": "2015-01-22T20:33:27+09:00"
+		},
+		{
+			"canonical": "github.com/mreiferson/go-snappystream",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/mreiferson/go-snappystream",
+			"revision": "a5260a307b3e7dd583283c1e2717445244d506c7",
+			"revisionTime": "2014-11-25T06:40:23-08:00"
+		},
+		{
+			"canonical": "github.com/stretchr/testify/assert",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/stretchr/testify/assert",
+			"revision": "8ce79b9f0b77745113f82c17d0756771456ccbd3",
+			"revisionTime": "2014-11-18T15:38:11-08:00"
+		},
+		{
+			"canonical": "golang.org/x/net/context",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/net/context",
+			"revision": "d9558e5c97f85372afee28cf2b6059d7d3818919",
+			"revisionTime": "2015-06-29T10:25:16+09:00"
+		},
+		{
+			"canonical": "gopkg.in/bluesuncorp/validator.v5",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/gopkg.in/bluesuncorp/validator.v5",
+			"revision": "d8e0c4d93696f467eedc43f7f954b48eb6fe6ba8",
+			"revisionTime": "2015-06-29T21:01:05-04:00"
+		}
+	]
+}
