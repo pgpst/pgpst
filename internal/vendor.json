@@ -40,8 +40,8 @@
 			"canonical": "github.com/bitly/go-nsq",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/bitly/go-nsq",
-			"revision": "d76cbe0746446bc6ff540042dde4d074a962dfde",
-			"revisionTime": "2015-04-07T20:55:05-07:00"
+			"revision": "8c8eba2ac6823ce1ba17b3a353eaf5811a21a7f5",
+			"revisionTime": "2015-05-03T14:51:45-04:00"
 		},
 		{
 			"canonical": "github.com/bitly/go-simplejson",
@@ -61,8 +61,8 @@
 			"canonical": "github.com/dancannon/gorethink",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink",
-			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
-			"revisionTime": "2015-06-11T22:12:20+01:00"
+			"revision": "8aca6ba2cc6e873299617d730fac0d7f6593113a",
+			"revisionTime": "2015-06-29T21:40:01+01:00"
 		},
 		{
 			"canonical": "github.com/dancannon/gorethink/encoding",

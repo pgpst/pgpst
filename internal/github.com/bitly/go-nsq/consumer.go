@@ -335,7 +335,7 @@ func (r *Consumer) ConnectToNSQLookupd(addr string) error {
 	return nil
 }
 
-// ConnectToNSQLookupd adds multiple nsqlookupd address to the list for this Consumer instance.
+// ConnectToNSQLookupds adds multiple nsqlookupd address to the list for this Consumer instance.
 //
 // If adding the first address it initiates an HTTP request to discover nsqd
 // producers for the configured topic.
@@ -431,6 +431,21 @@ func (r *Consumer) nextLookupdEndpoint() string {
 	return u.String()
 }
 
+type lookupResp struct {
+	Channels  []string    `json:"channels"`
+	Producers []*peerInfo `json:"producers"`
+	Timestamp int64       `json:"timestamp"`
+}
+
+type peerInfo struct {
+	RemoteAddress    string `json:"remote_address"`
+	Hostname         string `json:"hostname"`
+	BroadcastAddress string `json:"broadcast_address"`
+	TCPPort          int    `json:"tcp_port"`
+	HTTPPort         int    `json:"http_port"`
+	Version          string `json:"version"`
+}
+
 // make an HTTP req to one of the configured nsqlookupd instances to discover
 // which nsqd's provide the topic we are consuming.
 //
@@ -440,28 +455,17 @@ func (r *Consumer) queryLookupd() {
 
 	r.log(LogLevelInfo, "querying nsqlookupd %s", endpoint)
 
-	data, err := apiRequestNegotiateV1("GET", endpoint, nil)
+	var data lookupResp
+	err := apiRequestNegotiateV1("GET", endpoint, nil, &data)
 	if err != nil {
 		r.log(LogLevelError, "error querying nsqlookupd (%s) - %s", endpoint, err)
 		return
 	}
 
-	// {
-	//     "channels": [],
-	//     "producers": [
-	//         {
-	//             "broadcast_address": "jehiah-air.local",
-	//             "http_port": 4151,
-	//             "tcp_port": 4150
-	//         }
-	//     ],
-	//     "timestamp": 1340152173
-	// }
-	nsqdAddrs := make([]string, 0)
-	for i := range data.Get("producers").MustArray() {
-		producer := data.Get("producers").GetIndex(i)
-		broadcastAddress := producer.Get("broadcast_address").MustString()
-		port := producer.Get("tcp_port").MustInt()
+	var nsqdAddrs []string
+	for _, producer := range data.Producers {
+		broadcastAddress := producer.BroadcastAddress
+		port := producer.TCPPort
 		joined := net.JoinHostPort(broadcastAddress, strconv.Itoa(port))
 		nsqdAddrs = append(nsqdAddrs, joined)
 	}
@@ -478,7 +482,7 @@ func (r *Consumer) queryLookupd() {
 	}
 }
 
-// ConnectToNSQD takes multiple nsqd addresses to connect directly to.
+// ConnectToNSQDs takes multiple nsqd addresses to connect directly to.
 //
 // It is recommended to use ConnectToNSQLookupd so that topics are discovered
 // automatically.  This method is useful when you want to connect to local instance.
@@ -618,7 +622,7 @@ func (r *Consumer) DisconnectFromNSQLookupd(addr string) error {
 	}
 
 	if len(r.lookupdHTTPAddrs) == 1 {
-		return errors.New(fmt.Sprintf("cannot disconnect from only remaining nsqlookupd HTTP address %s", addr))
+		return fmt.Errorf("cannot disconnect from only remaining nsqlookupd HTTP address %s", addr)
 	}
 
 	r.lookupdHTTPAddrs = append(r.lookupdHTTPAddrs[:idx], r.lookupdHTTPAddrs[idx+1:]...)
@@ -728,7 +732,7 @@ func (r *Consumer) onConnClose(c *Conn) {
 		// try to reconnect after a bit
 		go func(addr string) {
 			for {
-				r.log(LogLevelInfo, "(%s) re-connecting in %.04f seconds...", addr, r.config.LookupdPollInterval)
+				r.log(LogLevelInfo, "(%s) re-connecting in %s", addr, r.config.LookupdPollInterval)
 				time.Sleep(r.config.LookupdPollInterval)
 				if atomic.LoadInt32(&r.stopFlag) == 1 {
 					break
