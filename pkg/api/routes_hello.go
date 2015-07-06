@@ -7,7 +7,7 @@ import (
 	"github.com/pgpst/pgpst/pkg/version"
 )
 
-func hello(c *gin.Context) {
+func (a *API) hello(c *gin.Context) {
 	c.JSON(http.StatusOK, &gin.H{
 		"name": version.String("pgpst-api"),
 	})

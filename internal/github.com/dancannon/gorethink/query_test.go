@@ -1,6 +1,6 @@
 package gorethink
 
-import test "gopkg.in/check.v1"
+import test "github.com/pgpst/pgpst/internal/gopkg.in/check.v1"
 
 func (s *RethinkSuite) TestQueryRun(c *test.C) {
 	var response string

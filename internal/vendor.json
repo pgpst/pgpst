@@ -2,6 +2,20 @@
 	"comment": "",
 	"package": [
 		{
+			"canonical": "code.google.com/p/go.crypto/pbkdf2",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/code.google.com/p/go.crypto/pbkdf2",
+			"revision": "1064b89a6fb5",
+			"revisionTime": "2014-06-04T11:40:03-07:00"
+		},
+		{
+			"canonical": "code.google.com/p/go.crypto/scrypt",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/code.google.com/p/go.crypto/scrypt",
+			"revision": "1064b89a6fb5",
+			"revisionTime": "2014-06-04T11:40:03-07:00"
+		},
+		{
 			"canonical": "code.google.com/p/snappy-go/snappy",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/code.google.com/p/snappy-go/snappy",
@@ -14,6 +28,13 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus",
 			"revision": "21d4508646ae56d79244bd9046c1df63a5fa8c37",
 			"revisionTime": "2015-06-10T05:38:35-04:00"
+		},
+		{
+			"canonical": "github.com/asaskevich/govalidator",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator",
+			"revision": "68d5221a67affc98529c25b1fbfeb69212a4dc8b",
+			"revisionTime": "2015-03-12T21:53:18+03:00"
 		},
 		{
 			"canonical": "github.com/bitly/go-nsq",
@@ -114,6 +135,41 @@
 			"revisionTime": "2015-05-26T11:05:00+10:00"
 		},
 		{
+			"canonical": "github.com/gyepisam/mcf",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf",
+			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
+			"revisionTime": "2014-02-04T10:53:37+02:00"
+		},
+		{
+			"canonical": "github.com/gyepisam/mcf/bridge",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/bridge",
+			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
+			"revisionTime": "2014-02-04T10:53:37+02:00"
+		},
+		{
+			"canonical": "github.com/gyepisam/mcf/encoder",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/encoder",
+			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
+			"revisionTime": "2014-02-04T10:53:37+02:00"
+		},
+		{
+			"canonical": "github.com/gyepisam/mcf/password",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/password",
+			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
+			"revisionTime": "2014-02-04T10:53:37+02:00"
+		},
+		{
+			"canonical": "github.com/gyepisam/mcf/scrypt",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/scrypt",
+			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
+			"revisionTime": "2014-02-04T10:53:37+02:00"
+		},
+		{
 			"canonical": "github.com/manucorporat/sse",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/manucorporat/sse",
@@ -161,6 +217,13 @@
 			"local": "github.com/pgpst/pgpst/internal/gopkg.in/bluesuncorp/validator.v5",
 			"revision": "d8e0c4d93696f467eedc43f7f954b48eb6fe6ba8",
 			"revisionTime": "2015-06-29T21:01:05-04:00"
+		},
+		{
+			"canonical": "gopkg.in/check.v1",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/gopkg.in/check.v1",
+			"revision": "5b76b26efe7f426789852e983fbde4de62c42282",
+			"revisionTime": "2014-07-09T11:41:00-03:00"
 		}
 	]
 }

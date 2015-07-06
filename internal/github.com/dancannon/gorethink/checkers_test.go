@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	test "gopkg.in/check.v1"
+	test "github.com/pgpst/pgpst/internal/gopkg.in/check.v1"
 
 	"github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/types"
 )

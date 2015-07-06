@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	test "gopkg.in/check.v1"
+	test "github.com/pgpst/pgpst/internal/gopkg.in/check.v1"
 )
 
 func (s *RethinkSuite) TestSelectGet(c *test.C) {

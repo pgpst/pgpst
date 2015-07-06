@@ -73,8 +73,71 @@ func (a *API) Main() {
 	router.Use(utils.GinLogger("API", a.Log))
 	router.Use(utils.GinRecovery(a.Raven))
 
-	// Routes
-	router.GET("/", hello)
+	// Hello route
+	router.GET("/", a.hello)
+
+	v1 := router.Group("/v1")
+	{
+		// Public routes
+		v1.POST("/accounts", a.createAccount) // Registration and reservation
+		//v1.POST("/token", a.createToken)      // Various OAuth handlers
+		//v1.GET("/keys/:id", a.readKey)        // Open keyserver
+
+		// Create a subrouter
+		//v1a := v1.Group("/", a.authMiddleware)
+		{
+			// Accounts
+			//v1a.GET("/accounts", a.listAccounts)
+			//v1a.GET("/accounts/:id", a.readAccount)
+			//v1a.PUT("/accounts/:id", a.updateAccount)
+			//v1a.DELETE("/accounts/:id", a.deleteAccount)
+
+			// Addresses
+			//v1a.POST("/addresses", a.createAddress)
+			//v1a.GET("/addresses", a.listAddresses)
+			//v1a.GET("/addresses/:id", a.readAddress)
+			//v1a.PUT("/addresses/:id", a.updateAddress)
+			//v1a.DELETE("/addresses/:id", a.deleteAddress)
+
+			// Emails
+			//v1a.POST("/emails", a.createEmail)
+			//v1a.GET("/emails", a.listEmails)
+			//v1a.GET("/emails/:id", a.getEmail)
+			//v1a.DELETE("/emails/:id", a.deleteEmail)
+
+			// Keys
+			//v1a.POST("/keys", a.createKeys)
+			//v1a.GET("/keys", a.listKeys)
+			//v1a.PUT("/keys/:id", a.updateKeys)
+			//v1a.DELETE("/keys/:id", a.deleteKey)
+
+			// Labels
+			//v1a.POST("/labels", a.createLabel)
+			//v1a.GET("/labels", a.listLabels)
+			//v1a.GET("/labels/:id", a.readLabel)
+			//v1a.PUT("/labels/:id", a.updateLabel)
+			//v1a.DELETE("/labels/:id", a.deleteLabel)
+
+			// Threads
+			//v1a.GET("/threads", a.listThreads)
+			//v1a.GET("/threads/:id", a.readThread)
+			//v1a.PUT("/threads/:id", a.updateThread)
+			//v1a.DELETE("/threads/:id", a.deleteThread)
+
+			// Tokens
+			//v1a.GET("/tokens", a.listTokens)
+			//v1a.GET("/tokens/:id", a.readToken)
+			//v1a.PUT("/tokens/:id", a.updateToken)
+			//v1a.DELETE("/tokens/:id", a.deleteToken)
+
+			// Resources
+			//v1a.POST("/resources", a.createResource)
+			//v1a.GET("/resources", a.listResources)
+			//v1a.GET("/resources/:id", a.readResource)
+			//v1a.PUT("/resources/:id", a.updateResource)
+			//v1a.DELETE("/resources/:id", a.deleteResource)
+		}
+	}
 
 	// Log that we're about to start the server
 	a.Log.Info("Starting the server")
