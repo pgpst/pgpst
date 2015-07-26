@@ -1,5 +1,9 @@
 package models
 
+import (
+	"time"
+)
+
 type Address struct {
 	ID           string    `gorethink:"id"`                           // the actual address
 	DateCreated  time.Time `gorethink:"date_created,omitempty"`       // when it was created

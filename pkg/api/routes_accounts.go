@@ -1,10 +1,14 @@
 package api
 
 import (
+	"time"
+
+	"github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
 
+	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"
 )
 
@@ -28,6 +32,10 @@ func (a *API) createAccount(c *gin.Context) {
 	// Switch the action
 	switch input.Action {
 	case "reserve":
+		// Parameters:
+		//  - username  - desired username
+		//  - alt_email - desired email
+
 		// Normalize the username
 		nu := utils.NormalizeUsername(input.Username)
 
@@ -96,7 +104,41 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 
 		// Create an account and an address
+		address := &models.Address{
+			ID:          nu + "@pgp.st",
+			DateCreated: time.Now(),
+			Owner:       "", // we set it later
+		}
+		account := &models.Account{
+			ID:           uniuri.NewLen(uniuri.UUIDLen),
+			DateCreated:  time.Now(),
+			MainAddress:  address.ID,
+			Subscription: "beta",
+			AltEmail:     input.AltEmail,
+			Status:       "unverified",
+		}
+		address.Owner = account.ID
+
+		// Insert them into the database
+		if err := r.Table("accounts").Insert(account).Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		if err := r.Table("addresses").Insert(address).Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Write a response
+		c.JSON(201, account)
 	case "activate":
+
 	}
 
 	// Same as default in the switch

@@ -5,15 +5,15 @@
 			"canonical": "code.google.com/p/go.crypto/pbkdf2",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/code.google.com/p/go.crypto/pbkdf2",
-			"revision": "1064b89a6fb5",
-			"revisionTime": "2014-06-04T11:40:03-07:00"
+			"revision": "88f995681294",
+			"revisionTime": "2014-11-04T10:58:06-08:00"
 		},
 		{
 			"canonical": "code.google.com/p/go.crypto/scrypt",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/code.google.com/p/go.crypto/scrypt",
-			"revision": "1064b89a6fb5",
-			"revisionTime": "2014-06-04T11:40:03-07:00"
+			"revision": "88f995681294",
+			"revisionTime": "2014-11-04T10:58:06-08:00"
 		},
 		{
 			"canonical": "code.google.com/p/snappy-go/snappy",
@@ -42,13 +42,6 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/bitly/go-nsq",
 			"revision": "8c8eba2ac6823ce1ba17b3a353eaf5811a21a7f5",
 			"revisionTime": "2015-05-03T14:51:45-04:00"
-		},
-		{
-			"canonical": "github.com/bitly/go-simplejson",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/bitly/go-simplejson",
-			"revision": "18db6e68d8fd9cbf2e8ebe4c81a78b96fd9bf05a",
-			"revisionTime": "2015-03-31T09:46:03-07:00"
 		},
 		{
 			"canonical": "github.com/cenkalti/backoff",
@@ -135,41 +128,6 @@
 			"revisionTime": "2015-05-26T11:05:00+10:00"
 		},
 		{
-			"canonical": "github.com/gyepisam/mcf",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf",
-			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
-			"revisionTime": "2014-02-04T10:53:37+02:00"
-		},
-		{
-			"canonical": "github.com/gyepisam/mcf/bridge",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/bridge",
-			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
-			"revisionTime": "2014-02-04T10:53:37+02:00"
-		},
-		{
-			"canonical": "github.com/gyepisam/mcf/encoder",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/encoder",
-			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
-			"revisionTime": "2014-02-04T10:53:37+02:00"
-		},
-		{
-			"canonical": "github.com/gyepisam/mcf/password",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/password",
-			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
-			"revisionTime": "2014-02-04T10:53:37+02:00"
-		},
-		{
-			"canonical": "github.com/gyepisam/mcf/scrypt",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/scrypt",
-			"revision": "805056816f56678a0e70fff55cdc209fb9a21d73",
-			"revisionTime": "2014-02-04T10:53:37+02:00"
-		},
-		{
 			"canonical": "github.com/manucorporat/sse",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/manucorporat/sse",
@@ -196,6 +154,20 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/mreiferson/go-snappystream",
 			"revision": "a5260a307b3e7dd583283c1e2717445244d506c7",
 			"revisionTime": "2014-11-25T06:40:23-08:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/mcf",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf",
+			"revision": "38673edf80e04a605619037b2bcceec6bf12be7a",
+			"revisionTime": "2015-07-26T21:12:52+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/mcf/scrypt",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/scrypt",
+			"revision": "38673edf80e04a605619037b2bcceec6bf12be7a",
+			"revisionTime": "2015-07-26T21:12:52+02:00"
 		},
 		{
 			"canonical": "github.com/stretchr/testify/assert",

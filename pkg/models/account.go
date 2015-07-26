@@ -3,8 +3,8 @@ package models
 import (
 	"time"
 
-	"github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf"
-	_ "github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/scrypt"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf"
+	_ "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/scrypt"
 )
 
 type Account struct {
@@ -12,13 +12,13 @@ type Account struct {
 	DateCreated  time.Time `json:"date_created,omitempty" gorethink:"date_created,omitempty"`   // when the account was created
 	DateModified time.Time `json:"date_modified,omitempty" gorethink:"date_modified,omitempty"` // last modification
 	MainAddress  string    `json:"main_address" gorethink:"main_address"`                       // main address id
-	Password     string    `json:"-" gorethink:"password,omitempty"`                            // scrypt'd sha256 password
+	Password     []byte    `json:"-" gorethink:"password,omitempty"`                            // scrypt'd sha256 password
 	Subscription string    `json:"subscription" gorethink:"subscription"`                       // chosen subscription
 	AltEmail     string    `json:"alt_email" gorethink:"alt_email"`                             // alternative email
 	Status       string    `json:"status" gorethink:"status"`                                   // account's status
 }
 
-func (a *Account) VerifyPassword(password string) (bool, bool, error) {
+func (a *Account) VerifyPassword(password []byte) (bool, bool, error) {
 	valid, err := mcf.Verify(password, a.Password)
 	if err != nil {
 		return false, false, err
@@ -46,7 +46,7 @@ func (a *Account) VerifyPassword(password string) (bool, bool, error) {
 	return true, false, nil
 }
 
-func (a *Account) SetPassword(password string) error {
+func (a *Account) SetPassword(password []byte) error {
 	encrypted, err := mcf.Create(password)
 	if err != nil {
 		return err

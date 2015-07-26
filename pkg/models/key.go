@@ -1,5 +1,9 @@
 package models
 
+import (
+	"time"
+)
+
 type Key struct {
 	ID           string    `json:"id" gorethink:"id"`                                           // key's fingerprint
 	DateCreated  time.Time `json:"date_created,omitempty" gorethink:"date_created,omitempty"`   // when it was created

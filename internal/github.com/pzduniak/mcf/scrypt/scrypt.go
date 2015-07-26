@@ -10,8 +10,8 @@ import (
 
 	"fmt"
 
-	"github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf"
-	"github.com/pgpst/pgpst/internal/github.com/gyepisam/mcf/bridge"
+	"github.com/gyepisam/mcf"
+	"github.com/gyepisam/mcf/bridge"
 )
 
 // Circa 2014 work factors.
