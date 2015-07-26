@@ -10,9 +10,9 @@ type Encoding uint8
 
 // List of known encodings.
 const (
-	BCRYPT Encoding = iota // import "github.com/gyepisam/mcf/bcrypt"
-	SCRYPT                 // import "github.com/gyepisam/mcf/scrypt"
-	PBKDF2                 // import "github.com/gyepisam/mcf/pbkdf2"
+	BCRYPT Encoding = iota // import "github.com/pzduniak/mcf/bcrypt"
+	SCRYPT                 // import "github.com/pzduniak/mcf/scrypt"
+	PBKDF2                 // import "github.com/pzduniak/mcf/pbkdf2"
 	//CRYPT                       // Not implemented yet
 
 	maxEncoding

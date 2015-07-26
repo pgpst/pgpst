@@ -24,8 +24,8 @@ it must not be removed from the import lists until all existing instances of
 that encoding have either been converted to a newer encoding or invalidated.
 
   import (
-    "github.com/gyepisam/mcf"
-    "github.com/gyepisam/mcf/scrypt"
+    "github.com/pzduniak/mcf"
+    "github.com/pzduniak/mcf/scrypt"
   )
 
   // A user provides a password at registration or signup.
@@ -84,7 +84,7 @@ Changing work factors or implementing other policy changes is similarly simple:
 Later, if you decide to switch to pbkdf2, just import it
 
 
-   _ "github.com/gyepisam/mcf/pbkdf2"
+   _ "github.com/pzduniak/mcf/pbkdf2"
 
 and make sure it is the current encoder.
 

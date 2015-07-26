@@ -2,8 +2,8 @@ package scrypt
 
 import (
 	"bytes"
-	"github.com/gyepisam/mcf"
-	"github.com/gyepisam/mcf/password"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/password"
 
 	"testing"
 )

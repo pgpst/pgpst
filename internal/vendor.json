@@ -159,15 +159,36 @@
 			"canonical": "github.com/pzduniak/mcf",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf",
-			"revision": "38673edf80e04a605619037b2bcceec6bf12be7a",
-			"revisionTime": "2015-07-26T21:12:52+02:00"
+			"revision": "51031d0d536dcbb00139bdc0abe4d7905363c7d2",
+			"revisionTime": "2015-07-26T21:22:38+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/mcf/bridge",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/bridge",
+			"revision": "51031d0d536dcbb00139bdc0abe4d7905363c7d2",
+			"revisionTime": "2015-07-26T21:22:38+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/mcf/encoder",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/encoder",
+			"revision": "51031d0d536dcbb00139bdc0abe4d7905363c7d2",
+			"revisionTime": "2015-07-26T21:22:38+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/mcf/password",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/password",
+			"revision": "51031d0d536dcbb00139bdc0abe4d7905363c7d2",
+			"revisionTime": "2015-07-26T21:22:38+02:00"
 		},
 		{
 			"canonical": "github.com/pzduniak/mcf/scrypt",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/scrypt",
-			"revision": "38673edf80e04a605619037b2bcceec6bf12be7a",
-			"revisionTime": "2015-07-26T21:12:52+02:00"
+			"revision": "51031d0d536dcbb00139bdc0abe4d7905363c7d2",
+			"revisionTime": "2015-07-26T21:22:38+02:00"
 		},
 		{
 			"canonical": "github.com/stretchr/testify/assert",
