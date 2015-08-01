@@ -126,6 +126,8 @@ func (a *API) createToken(c *gin.Context) {
 			})
 			return
 		}
+
+		// Create a new token
 	case "client_credentials":
 		// Parameters:
 		//  - client_id     - id of the application
