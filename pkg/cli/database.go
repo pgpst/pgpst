@@ -98,7 +98,7 @@ func databaseMigrate(c *cli.Context) {
 
 	// Ask for confirmations
 	if !c.Bool("yes") {
-		want, err := utils.AskForConfirmation("Would you like to run the %d migrations? [y/n]: ")
+		want, err := utils.AskForConfirmation("Would you like to run " + strconv.Itoa(len(migrations)-1-version) + " migrations? [y/n]: ")
 		if err != nil {
 			writeError(err)
 			return
@@ -112,7 +112,7 @@ func databaseMigrate(c *cli.Context) {
 
 	// Collect all queries
 	queries := []r.Term{}
-	for _, migration := range migrations[version:] {
+	for _, migration := range migrations[version+1:] {
 		queries = append(queries, migration.Migrate(opts)...)
 		queries = append(queries, r.Table("migration_status").Get("revision").Update(map[string]interface{}{
 			"value": migration.Revision,
