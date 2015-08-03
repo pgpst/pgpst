@@ -26,9 +26,8 @@ var migrations = []migration{
 				r.DB(opts.Database).TableCreate("keys"),
 				r.DB(opts.Database).TableCreate("labels"),
 				r.DB(opts.Database).TableCreate("resources"),
-				r.DB(opts.Database).TableCreate("scope"),
 				r.DB(opts.Database).TableCreate("thread"),
-				r.DB(opts.Database).TableCreate("token"),
+				r.DB(opts.Database).TableCreate("tokens"),
 			}
 		},
 		Revert: func(opts r.ConnectOpts) []r.Term {
@@ -40,9 +39,8 @@ var migrations = []migration{
 				r.DB(opts.Database).TableDrop("keys"),
 				r.DB(opts.Database).TableDrop("labels"),
 				r.DB(opts.Database).TableDrop("resources"),
-				r.DB(opts.Database).TableDrop("scope"),
 				r.DB(opts.Database).TableDrop("thread"),
-				r.DB(opts.Database).TableDrop("token"),
+				r.DB(opts.Database).TableDrop("tokens"),
 			}
 		},
 	},
