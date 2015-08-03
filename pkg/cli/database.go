@@ -2,7 +2,9 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
 
+	"github.com/cheggaaa/pb"
 	"github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 
@@ -82,6 +84,12 @@ func databaseMigrate(c *cli.Context) {
 	fmt.Printf("Current database schema's version is %d.\n", version)
 	fmt.Printf("Latest migration's version is %d.\n", len(migrations)-1)
 
+	// Only proceed if the schema is outdated
+	if version >= len(migrations)-1 {
+		fmt.Println("Your schema is up to date.")
+		return
+	}
+
 	// I don't know why would anyone use it, but it's here
 	if c.Bool("no") {
 		fmt.Println("Aborting the command because of the --no option.")
@@ -98,8 +106,31 @@ func databaseMigrate(c *cli.Context) {
 
 		if !want {
 			fmt.Println("Aborting the command.")
+			return
 		}
 	}
 
-	// Run the migrations
+	// Collect all queries
+	queries := []r.Term{}
+	for _, migration := range migrations[version:] {
+		queries = append(queries, migration.Migrate(opts)...)
+		queries = append(queries, r.Table("migration_status").Get("revision").Update(map[string]interface{}{
+			"value": migration.Revision,
+		}))
+	}
+
+	// Create a new progress bar
+	bar := pb.StartNew(len(queries))
+	for i, query := range queries {
+		if err := query.Exec(session); err != nil {
+			bar.FinishPrint("Failed to execute migration #" + strconv.Itoa(i) + ":")
+			fmt.Printf("\tQuery: %s\n", query.String())
+			fmt.Printf("\tError: %v\n", err)
+			return
+		}
+		bar.Increment()
+	}
+
+	// Show a "finished" message
+	bar.FinishPrint("Migration completed. " + strconv.Itoa(len(queries)) + " queries executed.")
 }
