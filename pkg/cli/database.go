@@ -34,25 +34,72 @@ func getDatabaseVersion(opts r.ConnectOpts, session *r.Session) (int, error) {
 	return result, nil
 }
 
-func databaseMigrate(c *cli.Context) {
+func databaseVersion(c *cli.Context) {
+	// Set up a RethinkDB connection
 	opts, err := utils.ParseRethinkDBString(c.GlobalString("rethinkdb"))
 	if err != nil {
 		writeError(err)
 		return
 	}
-
 	session, err := r.Connect(opts)
 	if err != nil {
 		writeError(err)
 		return
 	}
 
+	// Get the migration status from the database
 	version, err := getDatabaseVersion(opts, session)
 	if err != nil {
 		writeError(err)
 		return
 	}
 
+	// Write it to stdout
+	fmt.Println(version)
+}
+
+func databaseMigrate(c *cli.Context) {
+	// Set up a RethinkDB connection
+	opts, err := utils.ParseRethinkDBString(c.GlobalString("rethinkdb"))
+	if err != nil {
+		writeError(err)
+		return
+	}
+	session, err := r.Connect(opts)
+	if err != nil {
+		writeError(err)
+		return
+	}
+
+	// Get the migration status from the database
+	version, err := getDatabaseVersion(opts, session)
+	if err != nil {
+		writeError(err)
+		return
+	}
+
+	// Show the current migration's status
 	fmt.Printf("Current database schema's version is %d.\n", version)
 	fmt.Printf("Latest migration's version is %d.\n", len(migrations)-1)
+
+	// I don't know why would anyone use it, but it's here
+	if c.Bool("no") {
+		fmt.Println("Aborting the command because of the --no option.")
+		return
+	}
+
+	// Ask for confirmations
+	if !c.Bool("yes") {
+		want, err := utils.AskForConfirmation("Would you like to run the %d migrations? [y/n]: ")
+		if err != nil {
+			writeError(err)
+			return
+		}
+
+		if !want {
+			fmt.Println("Aborting the command.")
+		}
+	}
+
+	// Run the migrations
 }

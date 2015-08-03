@@ -96,16 +96,24 @@ func Run() {
 			Usage:   "Various database operations",
 			Subcommands: []cli.Command{
 				{
-					Name:   "migrate",
-					Usage:  "run all migrations",
+					Name:  "migrate",
+					Usage: "run all migrations",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "yes",
+							Usage: "Say yes to the prompt",
+						},
+						cli.BoolFlag{
+							Name:  "no",
+							Usage: "Say no to the prompt",
+						},
+					},
 					Action: databaseMigrate,
 				},
 				{
-					Name:  "version",
-					Usage: "compare database version to the tool's",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
-					},
+					Name:   "version",
+					Usage:  "compare database version to the tool's",
+					Action: databaseVersion,
 				},
 			},
 		},
