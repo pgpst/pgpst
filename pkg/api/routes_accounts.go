@@ -3,7 +3,7 @@ package api
 import (
 	"time"
 
-	"github.com/dchest/uniuri"
+	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"

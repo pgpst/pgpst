@@ -9,7 +9,7 @@ import (
 	"runtime"
 	//"strings"
 
-	"github.com/pzduniak/speakeasy"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/speakeasy"
 	//"github.com/dchest/uniuri"
 )
 

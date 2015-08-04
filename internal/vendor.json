@@ -51,6 +51,20 @@
 			"revisionTime": "2015-05-22T22:36:33+03:00"
 		},
 		{
+			"canonical": "github.com/cheggaaa/pb",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/cheggaaa/pb",
+			"revision": "e3e099c334cd89a6fe993f0683eaafd85604290f",
+			"revisionTime": "2015-07-05T13:10:48+03:00"
+		},
+		{
+			"canonical": "github.com/codegangsta/cli",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/codegangsta/cli",
+			"revision": "bca61c476e3c752594983e4c9bcd5f62fb09f157",
+			"revisionTime": "2015-07-11T14:54:04-07:00"
+		},
+		{
 			"canonical": "github.com/dancannon/gorethink",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink",
@@ -77,6 +91,13 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/types",
 			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
 			"revisionTime": "2015-06-11T22:12:20+01:00"
+		},
+		{
+			"canonical": "github.com/dchest/uniuri",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/dchest/uniuri",
+			"revision": "396b73a566d0993675357e6648bb98587a6162b4",
+			"revisionTime": "2015-04-04T00:46:40+02:00"
 		},
 		{
 			"canonical": "github.com/getsentry/raven-go",
@@ -156,6 +177,13 @@
 			"revisionTime": "2014-11-25T06:40:23-08:00"
 		},
 		{
+			"canonical": "github.com/olekukonko/ts",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/olekukonko/ts",
+			"revision": "ecf753e7c962639ab5a1fb46f7da627d4c0a04b8",
+			"revisionTime": "2014-04-12T15:01:45-07:00"
+		},
+		{
 			"canonical": "github.com/pzduniak/mcf",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf",
@@ -189,6 +217,13 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/scrypt",
 			"revision": "51031d0d536dcbb00139bdc0abe4d7905363c7d2",
 			"revisionTime": "2015-07-26T21:22:38+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/speakeasy",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/speakeasy",
+			"revision": "167bd5b1ab63388586d4be43f7894bd2b3523906",
+			"revisionTime": "2015-08-04T21:49:44+02:00"
 		},
 		{
 			"canonical": "github.com/stretchr/testify/assert",
