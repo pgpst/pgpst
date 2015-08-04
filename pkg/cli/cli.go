@@ -35,9 +35,13 @@ func Run() {
 				{
 					Name:  "add",
 					Usage: "creates a new account",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Read JSON from stdin",
+						},
 					},
+					Action: accountAdd,
 				},
 				{
 					Name:  "list",

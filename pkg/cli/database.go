@@ -11,7 +11,7 @@ import (
 	"github.com/pgpst/pgpst/pkg/utils"
 )
 
-func getDatabaseVersion(opts r.ConnectOpts, session *r.Session) (int, error) {
+func getDatabaseVersion(opts *r.ConnectOpts, session *r.Session) (int, error) {
 	cursor, err := r.Branch(
 		r.DB(opts.Database).TableList().Contains("migration_status"),
 		r.DB(opts.Database).Table("migration_status").Get("revision").Field("value"),
@@ -37,15 +37,9 @@ func getDatabaseVersion(opts r.ConnectOpts, session *r.Session) (int, error) {
 }
 
 func databaseVersion(c *cli.Context) {
-	// Set up a RethinkDB connection
-	opts, err := utils.ParseRethinkDBString(c.GlobalString("rethinkdb"))
-	if err != nil {
-		writeError(err)
-		return
-	}
-	session, err := r.Connect(opts)
-	if err != nil {
-		writeError(err)
+	// Connect to RethinkDB
+	opts, session, connected := connectToRethinkDB(c)
+	if !connected {
 		return
 	}
 
@@ -61,15 +55,9 @@ func databaseVersion(c *cli.Context) {
 }
 
 func databaseMigrate(c *cli.Context) {
-	// Set up a RethinkDB connection
-	opts, err := utils.ParseRethinkDBString(c.GlobalString("rethinkdb"))
-	if err != nil {
-		writeError(err)
-		return
-	}
-	session, err := r.Connect(opts)
-	if err != nil {
-		writeError(err)
+	// Connect to RethinkDB
+	opts, session, connected := connectToRethinkDB(c)
+	if !connected {
 		return
 	}
 

@@ -19,5 +19,5 @@ func NormalizeUsername(input string) string {
 func NormalizeAddress(input string) string {
 	parts := strings.SplitN(input, "@", 2)
 
-	return NormalizeUsername(parts[0]) + "@" + strings.ToLower(parts[1])
+	return NormalizeUsername(parts[0]) + "@" + strings.ToLowerSpecial(unicode.TurkishCase, parts[1])
 }

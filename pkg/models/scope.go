@@ -44,7 +44,7 @@ import (
 //   :modify
 //   :delete
 
-var Scopes = map[string]struct{}{
+var Scopes = []string{
 	"account",
 	"account:read",
 	"account:address",

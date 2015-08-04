@@ -7,15 +7,15 @@ import (
 type migration struct {
 	Revision int
 	Name     string
-	Migrate  func(r.ConnectOpts) []r.Term
-	Revert   func(r.ConnectOpts) []r.Term
+	Migrate  func(*r.ConnectOpts) []r.Term
+	Revert   func(*r.ConnectOpts) []r.Term
 }
 
 var migrations = []migration{
 	{
 		Revision: 0,
 		Name:     "create_tables",
-		Migrate: func(opts r.ConnectOpts) []r.Term {
+		Migrate: func(opts *r.ConnectOpts) []r.Term {
 			return []r.Term{
 				r.DB(opts.Database).TableCreate("accounts"),
 				r.Table("accounts").IndexCreate("alt_email"),
@@ -30,7 +30,7 @@ var migrations = []migration{
 				r.DB(opts.Database).TableCreate("tokens"),
 			}
 		},
-		Revert: func(opts r.ConnectOpts) []r.Term {
+		Revert: func(opts *r.ConnectOpts) []r.Term {
 			return []r.Term{
 				r.DB(opts.Database).TableDrop("accounts"),
 				r.DB(opts.Database).TableDrop("addresses"),
