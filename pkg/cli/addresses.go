@@ -113,7 +113,7 @@ func addressesList(c *cli.Context) {
 		return
 	}
 
-	// Get accounts without passwords from database
+	// Get addresses from database
 	cursor, err := r.Table("addresses").Map(func(row r.Term) r.Term {
 		return row.Merge(map[string]interface{}{
 			"main_address": r.Table("accounts").Get(row.Field("owner")).Field("main_address"),

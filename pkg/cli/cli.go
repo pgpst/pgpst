@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
@@ -95,16 +94,24 @@ func Run() {
 				{
 					Name:  "add",
 					Usage: "creates a new application",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Read JSON from stdin",
+						},
 					},
+					Action: applicationsAdd,
 				},
 				{
 					Name:  "list",
 					Usage: "lists applications",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
 					},
+					Action: applicationsList,
 				},
 			},
 		},
