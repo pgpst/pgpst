@@ -9,16 +9,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
-	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
+	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
+	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
 
 	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"
 )
 
-func accountAdd(c *cli.Context) {
+func accountsAdd(c *cli.Context) {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
@@ -159,4 +160,51 @@ func accountAdd(c *cli.Context) {
 
 	// Write a success message
 	fmt.Printf("Created a new account with ID %s\n", account.ID)
+}
+
+func accountsList(c *cli.Context) {
+	// Connect to RethinkDB
+	_, session, connected := connectToRethinkDB(c)
+	if !connected {
+		return
+	}
+
+	// Get accounts without passwords from database
+	cursor, err := r.Table("accounts").Map(func(row r.Term) r.Term {
+		return row.Without("password")
+	}).Run(session)
+	if err != nil {
+		writeError(err)
+		return
+	}
+	var accounts []*models.Account
+	if err := cursor.All(&accounts); err != nil {
+		writeError(err)
+		return
+	}
+
+	// Write the output
+	if c.Bool("json") {
+		if err := json.NewEncoder(os.Stdout).Encode(accounts); err != nil {
+			writeError(err)
+			return
+		}
+
+		fmt.Print("\n")
+		return
+	} else {
+		table := termtables.CreateTable()
+		table.AddHeaders("id", "main_address", "subscription", "status", "date_created")
+		for _, account := range accounts {
+			table.AddRow(
+				account.ID,
+				account.MainAddress,
+				account.Subscription,
+				account.Status,
+				account.DateCreated.Format(time.RubyDate),
+			)
+		}
+		fmt.Println(table.Render())
+		return
+	}
 }

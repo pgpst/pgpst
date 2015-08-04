@@ -41,14 +41,18 @@ func Run() {
 							Usage: "Read JSON from stdin",
 						},
 					},
-					Action: accountAdd,
+					Action: accountsAdd,
 				},
 				{
 					Name:  "list",
-					Usage: "lists accounts",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Usage: "creates a new account",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
 					},
+					Action: accountsList,
 				},
 			},
 		},
