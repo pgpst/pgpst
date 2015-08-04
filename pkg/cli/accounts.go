@@ -26,7 +26,7 @@ func accountsAdd(c *cli.Context) {
 		return
 	}
 
-	// Decode input from there
+	// Input struct
 	var input struct {
 		MainAddress  string `json:"main_address"`
 		Password     string `json:"password"`
@@ -171,13 +171,18 @@ func accountsList(c *cli.Context) {
 
 	// Get accounts without passwords from database
 	cursor, err := r.Table("accounts").Map(func(row r.Term) r.Term {
-		return row.Without("password")
+		return row.Without("password").Merge(map[string]interface{}{
+			"addresses": r.Table("addresses").GetAllByIndex("owner", row.Field("id")).CoerceTo("array"),
+		})
 	}).Run(session)
 	if err != nil {
 		writeError(err)
 		return
 	}
-	var accounts []*models.Account
+	var accounts []struct {
+		models.Account
+		Addresses []*models.Address `gorethink:"addresses"`
+	}
 	if err := cursor.All(&accounts); err != nil {
 		writeError(err)
 		return
@@ -194,11 +199,22 @@ func accountsList(c *cli.Context) {
 		return
 	} else {
 		table := termtables.CreateTable()
-		table.AddHeaders("id", "main_address", "subscription", "status", "date_created")
+		table.AddHeaders("id", "addresses", "subscription", "status", "date_created")
 		for _, account := range accounts {
+			emails := []string{}
+
+			for _, address := range account.Addresses {
+				if address.ID == account.MainAddress {
+					address.ID = "*" + address.ID
+					emails = append([]string{address.ID}, emails...)
+				} else {
+					emails = append(emails, address.ID)
+				}
+			}
+
 			table.AddRow(
 				account.ID,
-				account.MainAddress,
+				strings.Join(emails, ", "),
 				account.Subscription,
 				account.Status,
 				account.DateCreated.Format(time.RubyDate),

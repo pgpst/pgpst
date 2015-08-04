@@ -15,14 +15,16 @@ func Run() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "rethinkdb",
-			Value: "rethinkdb://127.0.0.1:28015/prod",
-			Usage: "rethinkdb connection URI",
+			Name:   "rethinkdb",
+			Value:  "rethinkdb://127.0.0.1:28015/prod",
+			Usage:  "rethinkdb connection URI",
+			EnvVar: "RETHINKDB",
 		},
 		cli.StringFlag{
-			Name:  "default_domain",
-			Value: "pgp.st",
-			Usage: "default domain to use in created data",
+			Name:   "default_domain",
+			Value:  "pgp.st",
+			Usage:  "default domain to use in created data",
+			EnvVar: "DEFAULT_DOMAIN",
 		},
 	}
 
@@ -45,7 +47,7 @@ func Run() {
 				},
 				{
 					Name:  "list",
-					Usage: "creates a new account",
+					Usage: "lists accounts",
 					Flags: []cli.Flag{
 						cli.BoolFlag{
 							Name:  "json",
@@ -64,16 +66,24 @@ func Run() {
 				{
 					Name:  "add",
 					Usage: "creates a new address",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Read JSON from stdin",
+						},
 					},
+					Action: addressesAdd,
 				},
 				{
 					Name:  "list",
 					Usage: "lists addresses",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
 					},
+					Action: addressesList,
 				},
 			},
 		},
