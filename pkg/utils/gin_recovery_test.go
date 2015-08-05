@@ -11,7 +11,7 @@ import (
 
 	"github.com/pgpst/pgpst/internal/github.com/getsentry/raven-go"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/pgpst/pgpst/internal/github.com/smartystreets/goconvey/convey"
 
 	"github.com/pgpst/pgpst/pkg/utils"
 )

@@ -156,6 +156,13 @@
 			"revisionTime": "2015-05-26T11:05:00+10:00"
 		},
 		{
+			"canonical": "github.com/jtolds/gls",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/jtolds/gls",
+			"revision": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c",
+			"revisionTime": "2014-11-03T11:57:36-07:00"
+		},
+		{
 			"canonical": "github.com/manucorporat/sse",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/manucorporat/sse",
@@ -226,13 +233,6 @@
 			"revisionTime": "2015-07-26T21:22:38+02:00"
 		},
 		{
-			"canonical": "github.com/pzduniak/speakeasy",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/speakeasy",
-			"revision": "167bd5b1ab63388586d4be43f7894bd2b3523906",
-			"revisionTime": "2015-08-04T21:49:44+02:00"
-		},
-		{
 			"canonical": "github.com/pzduniak/termtables",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables",
@@ -252,6 +252,76 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables/term",
 			"revision": "d7efb6c42bbf9b75e8559fd5b8205cb656ae9ff4",
 			"revisionTime": "2015-08-04T22:43:49+02:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/assertions",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions",
+			"revision": "f84dc26dce9c465dec172485e01faf2e53517a13",
+			"revisionTime": "2015-05-25T09:40:44-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/assertions/internal/oglematchers",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions/internal/oglematchers",
+			"revision": "f84dc26dce9c465dec172485e01faf2e53517a13",
+			"revisionTime": "2015-05-25T09:40:44-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/assertions/internal/oglemock",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions/internal/oglemock",
+			"revision": "f84dc26dce9c465dec172485e01faf2e53517a13",
+			"revisionTime": "2015-05-25T09:40:44-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/assertions/internal/oglemock/sample/mock_io",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions/internal/oglemock/sample/mock_io",
+			"revision": "f84dc26dce9c465dec172485e01faf2e53517a13",
+			"revisionTime": "2015-05-25T09:40:44-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/assertions/internal/ogletest",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions/internal/ogletest",
+			"revision": "f84dc26dce9c465dec172485e01faf2e53517a13",
+			"revisionTime": "2015-05-25T09:40:44-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/assertions/internal/ogletest/srcutil",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions/internal/ogletest/srcutil",
+			"revision": "f84dc26dce9c465dec172485e01faf2e53517a13",
+			"revisionTime": "2015-05-25T09:40:44-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/assertions/internal/reqtrace",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions/internal/reqtrace",
+			"revision": "f84dc26dce9c465dec172485e01faf2e53517a13",
+			"revisionTime": "2015-05-25T09:40:44-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/goconvey/convey",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/goconvey/convey",
+			"revision": "68c22200a00354e2a63e1a0ade46eadd20e00333",
+			"revisionTime": "2015-05-18T13:25:14-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/goconvey/convey/gotest",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/goconvey/convey/gotest",
+			"revision": "68c22200a00354e2a63e1a0ade46eadd20e00333",
+			"revisionTime": "2015-05-18T13:25:14-06:00"
+		},
+		{
+			"canonical": "github.com/smartystreets/goconvey/convey/reporting",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/goconvey/convey/reporting",
+			"revision": "68c22200a00354e2a63e1a0ade46eadd20e00333",
+			"revisionTime": "2015-05-18T13:25:14-06:00"
 		},
 		{
 			"canonical": "github.com/stretchr/testify/assert",

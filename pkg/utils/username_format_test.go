@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	. "github.com/smartystreets/goconvey/convey"
+	. "github.com/pgpst/pgpst/internal/github.com/smartystreets/goconvey/convey"
 
 	"github.com/pgpst/pgpst/pkg/utils"
 )
