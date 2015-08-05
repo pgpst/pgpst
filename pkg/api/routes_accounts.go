@@ -135,13 +135,6 @@ func (a *API) createAccount(c *gin.Context) {
 			})
 			return
 		}
-		if err := r.Table("accounts").Insert(account).Exec(a.Rethink); err != nil {
-			c.JSON(500, &gin.H{
-				"code":    0,
-				"message": err.Error(),
-			})
-			return
-		}
 
 		// Write a response
 		c.JSON(201, account)
