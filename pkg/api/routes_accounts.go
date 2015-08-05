@@ -152,7 +152,11 @@ func (a *API) createAccount(c *gin.Context) {
 		//  - token   - relevant token for address
 
 		errors := []string{}
-		if !govalidator.IsEmail(input.Address) {
+
+		// Sanitise input.Address
+		input_address := utils.NormalizeAddress(input.Address)
+
+		if !govalidator.IsEmail(input_address) {
 			errors = append(errors, "Invalid address format")
 		}
 		if input.Token == "" {
@@ -169,7 +173,7 @@ func (a *API) createAccount(c *gin.Context) {
 
 		// Check in the database whether these both exist
 		cursor, err := r.Table("tokens").Get(input.Token).Ne(nil).Do(func(left r.Term) map[string]interface{} {
-			var owner r.Term = r.Table("tokens").Get(input.Token).Field("owner")
+			owner := r.Table("tokens").Get(input.Token).Field("owner")
 
 			return map[string]interface{}{
 				"id": left,
@@ -188,11 +192,18 @@ func (a *API) createAccount(c *gin.Context) {
 					true, // return true even if token doesn't exist so that it doesnt errorspam
 				),
 
-				// If token exists, check if owner=input.Address
+				// If token exists, check if owner=input_address
 				"address": r.Branch(
 					left.Eq(true),
-					r.Table("accounts").Get(owner).Field("main_address").Eq(input.Address),
+					r.Table("accounts").Get(owner).Field("main_address").Eq(input_address),
 					true, // return true even if token doesn't exist so no errorspam
+				),
+
+				// Also check if owner is inactive
+				"inactive": r.Branch(
+					left.Eq(true),
+					r.Table("accounts").Get(owner).Field("status").Eq("inactive"),
+					true, // you get the point
 				),
 			}
 		}).Run(a.Rethink)
@@ -205,10 +216,11 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 		defer cursor.Close()
 		var result struct {
-			ID      bool   `gorethink:"id"`
-			Owner   string `gorethink:"owner"`
-			Type    bool   `gorethink:"type"`
-			Address bool   `gorethink:"address"`
+			ID       bool   `gorethink:"id"`
+			Owner    string `gorethink:"owner"`
+			Type     bool   `gorethink:"type"`
+			Address  bool   `gorethink:"address"`
+			Inactive bool   `gorethink:"inactive"`
 		}
 		if err := cursor.One(&result); err != nil {
 			c.JSON(500, &gin.H{
@@ -218,19 +230,17 @@ func (a *API) createAccount(c *gin.Context) {
 			return
 		}
 
-		// We need to check if the token exists
 		if !result.ID {
 			errors = append(errors, "Invalid token - token doesn't exist")
 		}
-
-		// And the token type
 		if !result.Type {
 			errors = append(errors, "Invalid token - wrong token type")
 		}
-
-		// Now we need to check if the owner has the same address
 		if !result.Address {
-			errors = append(errors, "Invalid token - address doesn't map to token")
+			errors = append(errors, "Address doesn't map to token")
+		}
+		if !result.Inactive {
+			errors = append(errors, "Account already active")
 		}
 
 		if len(errors) > 0 {
