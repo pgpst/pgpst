@@ -232,6 +232,16 @@ func (a *API) createAccount(c *gin.Context) {
 			return
 		}
 
+		// token has been deleted now, let's check if it was expired
+		if result.Token.IsExpired() {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Activation failed",
+				"errors":  []string{"Token expired"},
+			})
+			return
+		}
+
 		// and make the account active, welcome to pgp.st, new guy!
 		if err := r.Table("accounts").Get(result.Account.ID).Update(map[string]interface{}{
 			"status": "active",
