@@ -20,6 +20,7 @@ func (a *API) createAccount(c *gin.Context) {
 		AltEmail string `json:"alt_email"`
 		Token    string `json:"token"`
 		Password string `json:"password"`
+		Address  string `json:"address"`
 	}
 	if err := c.Bind(&input); err != nil {
 		c.JSON(422, &gin.H{
@@ -62,7 +63,7 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 
 		// Check in the database whether you can register such account
-		cursor, err := r.Table("addresses").GetAll(nu + "@pgp.st").Count().Eq(1).Do(func(left r.Term) map[string]interface{} {
+		cursor, err := r.Table("addresses").Get(nu + "@pgp.st").Ne(nil).Do(func(left r.Term) map[string]interface{} {
 			return map[string]interface{}{
 				"username":  left,
 				"alt_email": r.Table("accounts").GetAllByIndex("alt_email", input.AltEmail).Count().Eq(1),
@@ -115,19 +116,19 @@ func (a *API) createAccount(c *gin.Context) {
 			MainAddress:  address.ID,
 			Subscription: "beta",
 			AltEmail:     input.AltEmail,
-			Status:       "unverified",
+			Status:       "inactive",
 		}
 		address.Owner = account.ID
 
 		// Insert them into the database
-		if err := r.Table("accounts").Insert(account).Exec(a.Rethink); err != nil {
+		if err := r.Table("addresses").Insert(address).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,
 				"message": err.Error(),
 			})
 			return
 		}
-		if err := r.Table("addresses").Insert(address).Exec(a.Rethink); err != nil {
+		if err := r.Table("accounts").Insert(account).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,
 				"message": err.Error(),
@@ -137,8 +138,117 @@ func (a *API) createAccount(c *gin.Context) {
 
 		// Write a response
 		c.JSON(201, account)
+		return
 	case "activate":
+		// Parameters:
+		//  - address - expected address
+		//  - token   - relevant token for address
 
+		errors := []string{}
+
+		if !govalidator.IsEmail(input.Address) {
+			errors = append(errors, "Invalid address format")
+		}
+		if input.Token == "" {
+			errors = append(errors, "Token is missing")
+		}
+		if len(errors) > 0 {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Validation failed",
+				"errors":  errors,
+			})
+			return
+		}
+
+		// Normalise input.Address
+		input_address := utils.RemoveDots(utils.NormalizeAddress(input.Address))
+
+		// Check in the database whether these both exist
+		cursor, err := r.Table("tokens").Get(input.Token).Do(func(left r.Term) r.Term {
+			return r.Branch(
+				left.Ne(nil).And(left.Field("type").Eq("activate")),
+				map[string]interface{}{
+					"token":   left,
+					"account": r.Table("accounts").Get(left.Field("owner")),
+				},
+				map[string]interface{}{
+					"token":   nil,
+					"account": nil,
+				},
+			)
+		}).Run(a.Rethink)
+		if err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		defer cursor.Close()
+		var result struct {
+			Token   *models.Token   `gorethink:"token"`
+			Account *models.Account `gorethink:"account"`
+		}
+		if err := cursor.One(&result); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		if result.Token == nil {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Activation failed",
+				"errors":  []string{"Invalid token"},
+			})
+			return
+		}
+
+		if result.Account.MainAddress != input_address {
+			errors = append(errors, "Address does not match token")
+		} else if result.Account.Status != "inactive" {
+			// Don't tell them an account is active is the address doesn't map
+			errors = append(errors, "Account already active")
+		}
+
+		if len(errors) > 0 {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Activation failed",
+				"errors":  errors,
+			})
+			return
+		}
+
+		// Everything seems okay, let's go ahead and delete the token
+		if err := r.Table("tokens").Get(result.Token.ID).Delete().Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// and make the account active, welcome to pgp.st, new guy!
+		if err := r.Table("accounts").Get(result.Account.ID).Update(map[string]interface{}{
+			"status": "active",
+		}).Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Temporary response...
+		c.JSON(201, &gin.H{
+			"id":      result.Account.ID,
+			"message": "Activation successful",
+		})
+		return
 	}
 
 	// Same as default in the switch
