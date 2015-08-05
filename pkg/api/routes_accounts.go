@@ -160,7 +160,7 @@ func (a *API) createAccount(c *gin.Context) {
 			errors = append(errors, "Invalid address format")
 		}
 		if input.Token == "" {
-			errors = append(errors, "Invalid token - none given")
+			errors = append(errors, "Token is missing")
 		}
 		if len(errors) > 0 {
 			c.JSON(422, &gin.H{
