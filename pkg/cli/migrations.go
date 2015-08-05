@@ -106,6 +106,7 @@ var migrations = []migration{
 				r.Table("tokens").IndexCreate("type"),
 				r.Table("tokens").IndexCreate("scope", r.IndexCreateOpts{Multi: true}),
 				r.Table("tokens").IndexCreate("client_id"),
+				r.Table("tokens").IndexCreate("expiry_date"),
 				r.Table("tokens").IndexCreate("date_created"),
 				r.Table("tokens").IndexCreate("date_modified"),
 			}
@@ -169,6 +170,7 @@ var migrations = []migration{
 				r.Table("tokens").IndexDrop("type"),
 				r.Table("tokens").IndexDrop("scope"),
 				r.Table("tokens").IndexDrop("client_id"),
+				r.Table("tokens").IndexDrop("expiry_date"),
 				r.Table("tokens").IndexDrop("date_created"),
 				r.Table("tokens").IndexDrop("date_modified"),
 			}

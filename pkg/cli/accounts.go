@@ -181,7 +181,7 @@ func accountsList(c *cli.Context) {
 	}
 	var accounts []struct {
 		models.Account
-		Addresses []*models.Address `gorethink:"addresses"`
+		Addresses []*models.Address `gorethink:"addresses" json:"addresses`
 	}
 	if err := cursor.All(&accounts); err != nil {
 		writeError(err)

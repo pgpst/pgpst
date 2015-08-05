@@ -142,6 +142,35 @@ func Run() {
 				},
 			},
 		},
+		{
+			Name:    "tokens",
+			Aliases: []string{"toks"},
+			Usage:   "Manage auth and activate tokens",
+			Subcommands: []cli.Command{
+				{
+					Name:  "add",
+					Usage: "creates a new token",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Read JSON from stdin",
+						},
+					},
+					Action: tokensAdd,
+				},
+				{
+					Name:  "list",
+					Usage: "lists tokens",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
+					},
+					Action: tokensList,
+				},
+			},
+		},
 	}
 
 	app.Run(os.Args)

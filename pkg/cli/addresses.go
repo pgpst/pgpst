@@ -125,7 +125,7 @@ func addressesList(c *cli.Context) {
 	}
 	var addresses []struct {
 		models.Address
-		MainAddress string `gorethink:"main_address"`
+		MainAddress string `gorethink:"main_address" json:"main_address"`
 	}
 	if err := cursor.All(&addresses); err != nil {
 		writeError(err)

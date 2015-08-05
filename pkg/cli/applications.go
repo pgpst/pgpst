@@ -144,7 +144,7 @@ func applicationsList(c *cli.Context) {
 		return
 	}
 
-	// Get accounts without passwords from database
+	// Get applications from database
 	cursor, err := r.Table("applications").Map(func(row r.Term) r.Term {
 		return row.Merge(map[string]interface{}{
 			"owners_address": r.Table("accounts").Get(row.Field("owner")).Field("main_address"),
@@ -156,7 +156,7 @@ func applicationsList(c *cli.Context) {
 	}
 	var applications []struct {
 		models.Application
-		OwnersAddress string `gorethink:"owners_address"`
+		OwnersAddress string `gorethink:"owners_address" json:"owners_address"`
 	}
 	if err := cursor.All(&applications); err != nil {
 		writeError(err)
