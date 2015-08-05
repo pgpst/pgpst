@@ -162,7 +162,7 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 
 		// Normalise input.Address
-		input_address := utils.NormalizeAddress(input.Address)
+		input_address := utils.RemoveDots(utils.NormalizeAddress(input.Address))
 
 		// Check in the database whether these both exist
 		cursor, err := r.Table("tokens").Get(input.Token).Do(func(left r.Term) r.Term {
@@ -208,7 +208,7 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 
 		if result.Account.MainAddress != input_address {
-			errors = append(errors, "Address doesn't map to token")
+			errors = append(errors, "Address does not match token")
 		} else if result.Account.Status != "inactive" {
 			// Don't tell them an account is active is the address doesn't map
 			errors = append(errors, "Account already active")
