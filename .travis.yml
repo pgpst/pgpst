@@ -1,5 +1,9 @@
 language: go
 
-install: cd apps && go get -t -v ./... && cd ../pkg && go get -t -v ./... && cd ../
+install: 
+  - go get github.com/mattn/goveralls
+  - cd apps && go get -t -v ./... && cd ../pkg && go get -t -v ./... && cd ../
 
-script: cd pkg && go test ./...
+script:
+  - cd pkg && go test -covermode=count -coverprofile=profile.cov ./...
+  - goveralls -coverprofile=profile.cov -service=travis-ci
