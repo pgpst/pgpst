@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 )
 
@@ -14,7 +13,8 @@ func reportPanic(w io.Writer, err error) {
 	bw := runtime.Stack(buf, false)
 	stack := bytes.SplitN(buf[:bw], []byte("\n"), 6)
 
-	fmt.Printf(
+	fmt.Fprintf(
+		w,
 		"%+v\n\n%s\n",
 		err,
 		bytes.Join(
@@ -33,6 +33,4 @@ func CLIRecovery(w io.Writer) {
 			reportPanic(w, errors.New(fmt.Sprintf("%+v", cv)))
 		}
 	}
-
-	os.Exit(1)
 }

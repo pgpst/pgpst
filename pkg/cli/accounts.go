@@ -14,6 +14,7 @@ import (
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
+	"github.com/pzduniak/speakeasy"
 
 	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"
@@ -49,7 +50,7 @@ func accountsAdd(c *cli.Context) {
 			return
 		}
 
-		password, err := utils.AskPassword("Password: ")
+		password, err := speakeasy.Ask("Password: ")
 		if err != nil {
 			writeError(err)
 			return
