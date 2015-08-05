@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"path/filepath"
 	"runtime"
 	"strconv"
 
@@ -14,7 +15,7 @@ type NSQLogger struct {
 func (n *NSQLogger) Output(calldepth int, text string) error {
 	_, file, line, _ := runtime.Caller(calldepth)
 	n.Log.WithFields(logrus.Fields{
-		"location": file + ":" + strconv.Itoa(line),
+		"location": filepath.Base(file) + ":" + strconv.Itoa(line),
 	}).Warn(text)
 	return nil
 }
