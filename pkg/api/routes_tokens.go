@@ -46,8 +46,8 @@ func (a *API) createToken(c *gin.Context) {
 		//  - password  - sha256 of the account's password
 		//  - client_id - id of the client app used for stats
 
-		// Normaliuze the username
-		na := utils.NormalizeAddress(input.Address)
+		// Normalize the username
+		na := utils.RemoveDots(utils.NormalizeAddress(input.Address))
 
 		// Validate input
 		errors := []string{}

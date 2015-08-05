@@ -3,9 +3,9 @@ package api
 import (
 	"time"
 
-	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
+	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
 
 	"github.com/pgpst/pgpst/pkg/models"
@@ -37,7 +37,7 @@ func (a *API) createAccount(c *gin.Context) {
 		//  - alt_email - desired email
 
 		// Normalize the username
-		nu := utils.NormalizeUsername(input.Username)
+		nu := utils.RemoveDots(utils.NormalizeUsername(input.Username))
 
 		// Validate input:
 		// - len(username) >= 3 && len(username) <= 32
