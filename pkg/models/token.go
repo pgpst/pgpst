@@ -16,6 +16,6 @@ type Token struct {
 	ClientID string   `json:"client_id,omitempty" gorethink:"client_id,omitempty"`
 }
 
-func IsExpired(token Token) bool {
-	return !token.ExpiryDate.IsZero() && token.ExpiryDate.Before(time.Now())
+func (t *Token) IsExpired() bool {
+	return !t.ExpiryDate.IsZero() && t.ExpiryDate.Before(time.Now())
 }
