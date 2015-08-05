@@ -115,11 +115,18 @@ func (a *API) createAccount(c *gin.Context) {
 			MainAddress:  address.ID,
 			Subscription: "beta",
 			AltEmail:     input.AltEmail,
-			Status:       "unverified",
+			Status:       "inactive",
 		}
 		address.Owner = account.ID
 
 		// Insert them into the database
+		if err := r.Table("addresses").Insert(address).Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
 		if err := r.Table("accounts").Insert(account).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,
@@ -127,7 +134,7 @@ func (a *API) createAccount(c *gin.Context) {
 			})
 			return
 		}
-		if err := r.Table("addresses").Insert(address).Exec(a.Rethink); err != nil {
+		if err := r.Table("accounts").Insert(account).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,
 				"message": err.Error(),
