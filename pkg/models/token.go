@@ -15,3 +15,7 @@ type Token struct {
 	Scope    []string `json:"scope,omitempty" gorethink:"scope,omitempty"`
 	ClientID string   `json:"client_id,omitempty" gorethink:"client_id,omitempty"`
 }
+
+func IsExpired(token Token) bool {
+	return !token.ExpiryDate.IsZero() && token.ExpiryDate.Before(time.Now())
+}
