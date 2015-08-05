@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"runtime/debug"
+	//"runtime/debug"
 
 	"github.com/pgpst/pgpst/internal/github.com/getsentry/raven-go"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
@@ -31,8 +31,11 @@ func GinRecovery(rc *raven.Client) gin.HandlerFunc {
 				)
 			}
 
-			debug.PrintStack()
-			c.AbortWithStatus(500)
+			c.JSON(500, &gin.H{
+				"code":  500,
+				"error": "Internal server error",
+			})
+			c.Abort()
 			rc.Capture(packet, nil)
 		}()
 
