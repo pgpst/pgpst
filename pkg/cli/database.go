@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/pgpst/pgpst/internal/github.com/cheggaaa/pb"
@@ -86,7 +87,11 @@ func databaseMigrate(c *cli.Context) {
 
 	// Ask for confirmations
 	if !c.Bool("yes") {
-		want, err := utils.AskForConfirmation("Would you like to run " + strconv.Itoa(len(migrations)-1-version) + " migrations? [y/n]: ")
+		want, err := utils.AskForConfirmation(
+			os.Stdout,
+			os.Stdin,
+			"Would you like to run "+strconv.Itoa(len(migrations)-1-version)+" migrations? [y/n]: ",
+		)
 		if err != nil {
 			writeError(err)
 			return

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -15,11 +16,11 @@ var noResponses = map[string]struct{}{
 	"no": {},
 }
 
-func AskForConfirmation(prompt string) (bool, error) {
-	fmt.Print(prompt)
+func AskForConfirmation(w io.Writer, r io.Reader, prompt string) (bool, error) {
+	fmt.Fprint(w, prompt)
 
 	var input string
-	if _, err := fmt.Scanln(&input); err != nil {
+	if _, err := fmt.Fscanln(r, &input); err != nil {
 		return false, err
 	}
 
@@ -30,6 +31,6 @@ func AskForConfirmation(prompt string) (bool, error) {
 	} else if _, ok := noResponses[input]; ok {
 		return false, nil
 	} else {
-		return AskForConfirmation(prompt)
+		return AskForConfirmation(w, r, prompt)
 	}
 }
