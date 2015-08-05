@@ -246,7 +246,7 @@ func (a *API) createAccount(c *gin.Context) {
 		// Temporary response...
 		c.JSON(201, &gin.H{
 			"id":      result.Account.ID,
-			"message": "Activation success",
+			"message": "Activation successful",
 		})
 		return
 	}
