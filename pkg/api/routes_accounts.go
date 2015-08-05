@@ -197,7 +197,6 @@ func (a *API) createAccount(c *gin.Context) {
 			})
 			return
 		}
-
 		if result.Token == nil {
 			c.JSON(422, &gin.H{
 				"code":    0,
@@ -206,19 +205,11 @@ func (a *API) createAccount(c *gin.Context) {
 			})
 			return
 		}
-
 		if result.Account.MainAddress != input_address {
-			errors = append(errors, "Address does not match token")
-		} else if result.Account.Status != "inactive" {
-			// Don't tell them an account is active is the address doesn't map
-			errors = append(errors, "Account already active")
-		}
-
-		if len(errors) > 0 {
 			c.JSON(422, &gin.H{
 				"code":    0,
 				"message": "Activation failed",
-				"errors":  errors,
+				"errors":  []string{"Address does not match token"},
 			})
 			return
 		}
@@ -232,12 +223,18 @@ func (a *API) createAccount(c *gin.Context) {
 			return
 		}
 
-		// token has been deleted now, let's check if it was expired
+		// token has been deleted now, let's do some post deletion checks
 		if result.Token.IsExpired() {
+			errors = append(errors, "Token expired")
+		}
+		if result.Account.Status != "inactive" {
+			errors = append(errors, "Account already active")
+		}
+		if len(errors) > 0 {
 			c.JSON(422, &gin.H{
 				"code":    0,
 				"message": "Activation failed",
-				"errors":  []string{"Token expired"},
+				"errors":  errors,
 			})
 			return
 		}
