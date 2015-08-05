@@ -30,6 +30,13 @@
 			"revisionTime": "2015-06-10T05:38:35-04:00"
 		},
 		{
+			"canonical": "github.com/apcera/termtables/locale",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/apcera/termtables/locale",
+			"revision": "be44afb7779fac2e35b57717ee00d77e0e6698ed",
+			"revisionTime": "2015-05-06T11:05:57-07:00"
+		},
+		{
 			"canonical": "github.com/asaskevich/govalidator",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator",
@@ -224,6 +231,27 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/speakeasy",
 			"revision": "167bd5b1ab63388586d4be43f7894bd2b3523906",
 			"revisionTime": "2015-08-04T21:49:44+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/termtables",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables",
+			"revision": "d7efb6c42bbf9b75e8559fd5b8205cb656ae9ff4",
+			"revisionTime": "2015-08-04T22:43:49+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/termtables/locale",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables/locale",
+			"revision": "d7efb6c42bbf9b75e8559fd5b8205cb656ae9ff4",
+			"revisionTime": "2015-08-04T22:43:49+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/termtables/term",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables/term",
+			"revision": "d7efb6c42bbf9b75e8559fd5b8205cb656ae9ff4",
+			"revisionTime": "2015-08-04T22:43:49+02:00"
 		},
 		{
 			"canonical": "github.com/stretchr/testify/assert",

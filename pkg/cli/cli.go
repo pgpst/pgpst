@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
@@ -15,14 +14,16 @@ func Run() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "rethinkdb",
-			Value: "rethinkdb://127.0.0.1:28015/prod",
-			Usage: "rethinkdb connection URI",
+			Name:   "rethinkdb",
+			Value:  "rethinkdb://127.0.0.1:28015/prod",
+			Usage:  "rethinkdb connection URI",
+			EnvVar: "RETHINKDB",
 		},
 		cli.StringFlag{
-			Name:  "default_domain",
-			Value: "pgp.st",
-			Usage: "default domain to use in created data",
+			Name:   "default_domain",
+			Value:  "pgp.st",
+			Usage:  "default domain to use in created data",
+			EnvVar: "DEFAULT_DOMAIN",
 		},
 	}
 
@@ -41,14 +42,18 @@ func Run() {
 							Usage: "Read JSON from stdin",
 						},
 					},
-					Action: accountAdd,
+					Action: accountsAdd,
 				},
 				{
 					Name:  "list",
 					Usage: "lists accounts",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
 					},
+					Action: accountsList,
 				},
 			},
 		},
@@ -60,16 +65,24 @@ func Run() {
 				{
 					Name:  "add",
 					Usage: "creates a new address",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Read JSON from stdin",
+						},
 					},
+					Action: addressesAdd,
 				},
 				{
 					Name:  "list",
 					Usage: "lists addresses",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
 					},
+					Action: addressesList,
 				},
 			},
 		},
@@ -81,16 +94,24 @@ func Run() {
 				{
 					Name:  "add",
 					Usage: "creates a new application",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Read JSON from stdin",
+						},
 					},
+					Action: applicationsAdd,
 				},
 				{
 					Name:  "list",
 					Usage: "lists applications",
-					Action: func(c *cli.Context) {
-						fmt.Printf("%+v\n", c.Args().Tail())
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
 					},
+					Action: applicationsList,
 				},
 			},
 		},
@@ -118,6 +139,35 @@ func Run() {
 					Name:   "version",
 					Usage:  "compare database version to the tool's",
 					Action: databaseVersion,
+				},
+			},
+		},
+		{
+			Name:    "tokens",
+			Aliases: []string{"toks"},
+			Usage:   "Manage auth and activate tokens",
+			Subcommands: []cli.Command{
+				{
+					Name:  "add",
+					Usage: "creates a new token",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Read JSON from stdin",
+						},
+					},
+					Action: tokensAdd,
+				},
+				{
+					Name:  "list",
+					Usage: "lists tokens",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "json",
+							Usage: "Output JSON",
+						},
+					},
+					Action: tokensList,
 				},
 			},
 		},
