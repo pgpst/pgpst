@@ -146,10 +146,7 @@ func (a *API) createAccount(c *gin.Context) {
 
 		errors := []string{}
 
-		// Normalise input.Address
-		input_address := utils.NormalizeAddress(input.Address)
-
-		if !govalidator.IsEmail(input_address) {
+		if !govalidator.IsEmail(input.Address) {
 			errors = append(errors, "Invalid address format")
 		}
 		if input.Token == "" {
@@ -164,41 +161,22 @@ func (a *API) createAccount(c *gin.Context) {
 			return
 		}
 
+		// Normalise input.Address
+		input_address := utils.NormalizeAddress(input.Address)
+
 		// Check in the database whether these both exist
-		cursor, err := r.Table("tokens").Get(input.Token).Ne(nil).Do(func(left r.Term) map[string]interface{} {
-			owner := r.Table("tokens").Get(input.Token).Field("owner")
-
-			return map[string]interface{}{
-				"id": left,
-
-				// If token exists, get the owner
-				"owner": r.Branch(
-					left.Eq(true),
-					owner,
-					"",
-				),
-
-				// If token exists, check if type="activate"
-				"type": r.Branch(
-					left.Eq(true),
-					r.Table("tokens").Get(input.Token).Field("type").Eq("activate"),
-					true, // return true even if token doesn't exist so that it doesnt errorspam
-				),
-
-				// If token exists, check if owner=input_address
-				"address": r.Branch(
-					left.Eq(true),
-					r.Table("accounts").Get(owner).Field("main_address").Eq(input_address),
-					true, // return true even if token doesn't exist so no errorspam
-				),
-
-				// Also check if owner is inactive
-				"inactive": r.Branch(
-					left.Eq(true),
-					r.Table("accounts").Get(owner).Field("status").Eq("inactive"),
-					true, // you get the point
-				),
-			}
+		cursor, err := r.Table("tokens").Get(input.Token).Do(func(left r.Term) r.Term {
+			return r.Branch(
+				left.Ne(nil).And(left.Field("type").Eq("activate")),
+				map[string]interface{}{
+					"token":   left,
+					"account": r.Table("accounts").Get(left.Field("owner")),
+				},
+				map[string]interface{}{
+					"token":   nil,
+					"account": nil,
+				},
+			)
 		}).Run(a.Rethink)
 		if err != nil {
 			c.JSON(500, &gin.H{
@@ -209,11 +187,8 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 		defer cursor.Close()
 		var result struct {
-			ID       bool   `gorethink:"id"`
-			Owner    string `gorethink:"owner"`
-			Type     bool   `gorethink:"type"`
-			Address  bool   `gorethink:"address"`
-			Inactive bool   `gorethink:"inactive"`
+			Token   *models.Token   `gorethink:"token"`
+			Account *models.Account `gorethink:"account"`
 		}
 		if err := cursor.One(&result); err != nil {
 			c.JSON(500, &gin.H{
@@ -223,16 +198,19 @@ func (a *API) createAccount(c *gin.Context) {
 			return
 		}
 
-		if !result.ID {
-			errors = append(errors, "Invalid token - token doesn't exist")
+		if result.Token == nil {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Activation failed",
+				"errors":  []string{"Invalid token"},
+			})
+			return
 		}
-		if !result.Type {
-			errors = append(errors, "Invalid token - wrong token type")
-		}
-		if !result.Address {
+
+		if result.Account.MainAddress != input_address {
 			errors = append(errors, "Address doesn't map to token")
-		}
-		if !result.Inactive {
+		} else if result.Account.Status != "inactive" {
+			// Don't tell them an account is active is the address doesn't map
 			errors = append(errors, "Account already active")
 		}
 
@@ -246,15 +224,16 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 
 		// Everything seems okay, let's go ahead and delete the token
-		if err := r.Table("tokens").Get(input.Token).Delete().Exec(a.Rethink); err != nil {
+		if err := r.Table("tokens").Get(result.Token.ID).Delete().Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,
 				"message": err.Error(),
 			})
 			return
 		}
+
 		// and make the account active, welcome to pgp.st, new guy!
-		if err := r.Table("accounts").Get(result.Owner).Update(map[string]interface{}{
+		if err := r.Table("accounts").Get(result.Account.ID).Update(map[string]interface{}{
 			"status": "active",
 		}).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
@@ -266,7 +245,7 @@ func (a *API) createAccount(c *gin.Context) {
 
 		// Temporary response...
 		c.JSON(201, &gin.H{
-			"id":      result.Owner,
+			"id":      result.Account.ID,
 			"message": "Activation success",
 		})
 		return
