@@ -1,5 +1,5 @@
 language: go
 
-install: cd apps && go get -t -v ./... && cd ../pkg && go get -t -v ./...
+install: cd apps && go get -t -v ./... && cd ../pkg && go get -t -v ./... && cd ../
 
 script: cd pkg && go test ./...
