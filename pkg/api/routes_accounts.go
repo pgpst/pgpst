@@ -153,7 +153,7 @@ func (a *API) createAccount(c *gin.Context) {
 
 		errors := []string{}
 
-		// Sanitise input.Address
+		// Normalise input.Address
 		input_address := utils.NormalizeAddress(input.Address)
 
 		if !govalidator.IsEmail(input_address) {
@@ -252,10 +252,29 @@ func (a *API) createAccount(c *gin.Context) {
 			return
 		}
 
+		// Everything seems okay, let's go ahead and delete the token
+		if err := r.Table("tokens").Get(input.Token).Delete().Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		// and make the account active, welcome to pgp.st, new guy!
+		if err := r.Table("accounts").Get(result.Owner).Update(map[string]interface{}{
+			"status": "active",
+		}).Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Temporary response...
 		c.JSON(201, &gin.H{
-			"code":    0,
-			"message": "Activation failed",
-			"errors":  []string{"Unknown error"},
+			"id":      result.Owner,
+			"message": "Activation success",
 		})
 		return
 	}
