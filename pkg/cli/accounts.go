@@ -171,14 +171,9 @@ func accountsList(c *cli.Context) {
 
 	// Get accounts without passwords from database
 	cursor, err := r.Table("accounts").Map(func(row r.Term) r.Term {
-		return r.Branch(
-			row.HasFields("client_id"),
-			row.Without("password").Merge(map[string]interface{}{
-				"addresses": r.Table("addresses").GetAllByIndex("owner", row.Field("id")).CoerceTo("array"),
-			}),
-			row.Without("password"),
-		)
-
+		return row.Without("password").Merge(map[string]interface{}{
+			"addresses": r.Table("addresses").GetAllByIndex("owner", row.Field("id")).CoerceTo("array"),
+		})
 	}).Run(session)
 	if err != nil {
 		writeError(err)

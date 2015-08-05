@@ -176,10 +176,16 @@ func tokensList(c *cli.Context) {
 
 	// Get tokens from database
 	cursor, err := r.Table("tokens").Map(func(row r.Term) r.Term {
-		return row.Merge(map[string]interface{}{
-			"owners_address": r.Table("accounts").Get(row.Field("owner")).Field("main_address"),
-			"client_name":    r.Table("applications").Get(row.Field("client_id")).Field("name"),
-		})
+		return r.Branch(
+			row.HasFields("client_id"),
+			row.Merge(map[string]interface{}{
+				"owners_address": r.Table("accounts").Get(row.Field("owner")).Field("main_address"),
+				"client_name":    r.Table("applications").Get(row.Field("client_id")).Field("name"),
+			}),
+			row.Merge(map[string]interface{}{
+				"owners_address": r.Table("accounts").Get(row.Field("owner")).Field("main_address"),
+			}),
+		)
 	}).Run(session)
 	if err != nil {
 		writeError(err)
