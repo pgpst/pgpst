@@ -20,6 +20,7 @@ func (a *API) createAccount(c *gin.Context) {
 		AltEmail string `json:"alt_email"`
 		Token    string `json:"token"`
 		Password string `json:"password"`
+		Address  string `json:"address"`
 	}
 	if err := c.Bind(&input); err != nil {
 		c.JSON(422, &gin.H{
@@ -62,7 +63,7 @@ func (a *API) createAccount(c *gin.Context) {
 		}
 
 		// Check in the database whether you can register such account
-		cursor, err := r.Table("addresses").GetAll(nu + "@pgp.st").Count().Eq(1).Do(func(left r.Term) map[string]interface{} {
+		cursor, err := r.Table("addresses").Get(nu + "@pgp.st").Ne(nil).Do(func(left r.Term) map[string]interface{} {
 			return map[string]interface{}{
 				"username":  left,
 				"alt_email": r.Table("accounts").GetAllByIndex("alt_email", input.AltEmail).Count().Eq(1),
@@ -144,8 +145,109 @@ func (a *API) createAccount(c *gin.Context) {
 
 		// Write a response
 		c.JSON(201, account)
+		return
 	case "activate":
+		// Parameters:
+		//  - address - expected address
+		//  - token   - relevant token for address
 
+		errors := []string{}
+		if !govalidator.IsEmail(input.Address) {
+			errors = append(errors, "Invalid address format")
+		}
+		if input.Token == "" {
+			errors = append(errors, "Invalid token - none given")
+		}
+		if len(errors) > 0 {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Validation failed",
+				"errors":  errors,
+			})
+			return
+		}
+
+		// Check in the database whether these both exist
+		cursor, err := r.Table("tokens").Get(input.Token).Ne(nil).Do(func(left r.Term) map[string]interface{} {
+			var owner r.Term = r.Table("tokens").Get(input.Token).Field("owner")
+
+			return map[string]interface{}{
+				"id": left,
+
+				// If token exists, get the owner
+				"owner": r.Branch(
+					left.Eq(true),
+					owner,
+					"",
+				),
+
+				// If token exists, check if type="activate"
+				"type": r.Branch(
+					left.Eq(true),
+					r.Table("tokens").Get(input.Token).Field("type").Eq("activate"),
+					true, // return true even if token doesn't exist so that it doesnt errorspam
+				),
+
+				// If token exists, check if owner=input.Address
+				"address": r.Branch(
+					left.Eq(true),
+					r.Table("accounts").Get(owner).Field("main_address").Eq(input.Address),
+					true, // return true even if token doesn't exist so no errorspam
+				),
+			}
+		}).Run(a.Rethink)
+		if err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		defer cursor.Close()
+		var result struct {
+			ID      bool   `gorethink:"id"`
+			Owner   string `gorethink:"owner"`
+			Type    bool   `gorethink:"type"`
+			Address bool   `gorethink:"address"`
+		}
+		if err := cursor.One(&result); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// We need to check if the token exists
+		if !result.ID {
+			errors = append(errors, "Invalid token - token doesn't exist")
+		}
+
+		// And the token type
+		if !result.Type {
+			errors = append(errors, "Invalid token - wrong token type")
+		}
+
+		// Now we need to check if the owner has the same address
+		if !result.Address {
+			errors = append(errors, "Invalid token - address doesn't map to token")
+		}
+
+		if len(errors) > 0 {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Activation failed",
+				"errors":  errors,
+			})
+			return
+		}
+
+		c.JSON(201, &gin.H{
+			"code":    0,
+			"message": "Activation failed",
+			"errors":  []string{"Unknown error"},
+		})
+		return
 	}
 
 	// Same as default in the switch
