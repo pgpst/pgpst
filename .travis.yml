@@ -2,8 +2,9 @@ language: go
 
 install: 
   - go get github.com/mattn/goveralls
-  - cd apps && go get -t -v ./... && cd ../pkg && go get -t -v ./... && cd ../
+  - go get github.com/pzduniak/multicov
+  - go get -t -v ./apps/... ./pkg/...
 
 script:
-  - cd pkg && go test -covermode=count -coverprofile=profile.cov ./...
-  - goveralls -coverprofile=profile.cov -service=travis-ci
+  - multicov ./pkg/...
+  - goveralls -coverprofile=coverage.out -service=travis-ci
