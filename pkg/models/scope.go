@@ -95,18 +95,24 @@ func InScope(scope []string, what []string) bool {
 
 	// Check the scope contents
 	for _, x := range what {
-		if strings.Contains(x, ":") {
-			parts := strings.SplitN(x, ":", 2)
+		found := false
 
-			if _, ok := hm[parts[0]]; ok {
-				return true
+		if _, ok := hm[x]; ok {
+			found = true
+		} else {
+			if strings.Contains(x, ":") {
+				parts := strings.SplitN(x, ":", 2)
+
+				if _, ok := hm[parts[0]]; ok {
+					found = true
+				}
 			}
 		}
 
-		if _, ok := hm[x]; ok {
-			return true
+		if !found {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
