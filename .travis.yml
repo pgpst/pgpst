@@ -15,5 +15,5 @@ before_script:
   - rethinkdb --daemon
 
 script:
-  - multicov ./pkg/...
+  - RETHINKDB=rethinkdb://127.0.0.1:28015/test multicov ./pkg/...
   - goveralls -coverprofile=coverage.out -service=travis-ci
