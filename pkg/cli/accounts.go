@@ -1,30 +1,31 @@
 package cli
 
 import (
+	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"time"
 
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
-	"github.com/pzduniak/speakeasy"
+	"github.com/pzduniak/cli"
+	//"github.com/pzduniak/speakeasy"
 
 	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"
 )
 
-func accountsAdd(c *cli.Context) {
+func accountsAdd(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Input struct
@@ -38,49 +39,68 @@ func accountsAdd(c *cli.Context) {
 
 	// Read JSON from stdin
 	if c.Bool("json") {
-		if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+		if err := json.NewDecoder(c.App.Env["reader"].(io.Reader)).Decode(&input); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 	} else {
+		// Buffer stdin
+		rd := bufio.NewReader(c.App.Env["reader"].(io.Reader))
+		var err error
+
 		// Acquire from interactive input
 		fmt.Print("Main address: ")
-		if _, err := fmt.Scanln(&input.MainAddress); err != nil {
-			writeError(err)
-			return
-		}
-
-		password, err := speakeasy.Ask("Password: ")
+		input.MainAddress, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
-		input.Password = password
+		input.MainAddress = strings.TrimSpace(input.MainAddress)
+
+		input.Password, err = rd.ReadString('\n')
+		if err != nil {
+			writeError(err)
+			return 1
+		}
+		input.Password = strings.TrimSpace(input.Password)
+
+		/*password, err := speakeasy.FAsk(rd, "Password: ")
+		if err != nil {
+			writeError(err)
+			return 1
+		}
+		input.Password = password*/
 
 		fmt.Print("Subscription [beta/admin]: ")
-		if _, err := fmt.Scanln(&input.Subscription); err != nil {
+		input.Subscription, err = rd.ReadString('\n')
+		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
+		input.Subscription = strings.TrimSpace(input.Subscription)
 
 		fmt.Print("Alternative address: ")
-		if _, err := fmt.Scanln(&input.AltEmail); err != nil {
+		input.AltEmail, err = rd.ReadString('\n')
+		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
+		input.AltEmail = strings.TrimSpace(input.AltEmail)
 
 		fmt.Print("Status [inactive/active/suspended]: ")
-		if _, err := fmt.Scanln(&input.Status); err != nil {
+		input.Status, err = rd.ReadString('\n')
+		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
+		input.Status = strings.TrimSpace(input.Status)
 	}
 
 	// Analyze the input
 
 	// First of all, the address. Append domain if it has no such suffix.
 	if strings.Index(input.MainAddress, "@") == -1 {
-		input.MainAddress += "@" + c.String("default_domain")
+		input.MainAddress += "@" + c.GlobalString("default_domain")
 	}
 
 	// And format it
@@ -90,17 +110,17 @@ func accountsAdd(c *cli.Context) {
 	cursor, err := r.Table("addresses").Get(input.MainAddress).Ne(nil).Run(session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	defer cursor.Close()
 	var taken bool
 	if err := cursor.One(&taken); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	if taken {
 		writeError(fmt.Errorf("Address %s is already taken", input.MainAddress))
-		return
+		return 1
 	}
 
 	// If the password isn't 64 characters long, then hash it.
@@ -112,19 +132,19 @@ func accountsAdd(c *cli.Context) {
 	// Subscription has to be beta or admin
 	if input.Subscription != "beta" && input.Subscription != "admin" {
 		writeError(fmt.Errorf("Subscription has to be either beta or admin. Got %s.", input.Subscription))
-		return
+		return 1
 	}
 
 	// AltEmail must be an email
 	if !govalidator.IsEmail(input.AltEmail) {
 		writeError(fmt.Errorf("Email %s has an incorrect format", input.AltEmail))
-		return
+		return 1
 	}
 
 	// Status has to be inactive/active/suspended
 	if input.Status != "inactive" && input.Status != "active" && input.Status != "suspended" {
 		writeError(fmt.Errorf("Status has to be either inactive, active or suspended. Got %s.", input.Status))
-		return
+		return 1
 	}
 
 	// Prepare structs to insert
@@ -139,7 +159,7 @@ func accountsAdd(c *cli.Context) {
 	}
 	if err := account.SetPassword([]byte(input.Password)); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	address := &models.Address{
@@ -150,24 +170,27 @@ func accountsAdd(c *cli.Context) {
 	}
 
 	// Insert them into database
-	if err := r.Table("addresses").Insert(address).Exec(session); err != nil {
-		writeError(err)
-		return
-	}
-	if err := r.Table("accounts").Insert(account).Exec(session); err != nil {
-		writeError(err)
-		return
+	if !c.Bool("dry") {
+		if err := r.Table("addresses").Insert(address).Exec(session); err != nil {
+			writeError(err)
+			return 1
+		}
+		if err := r.Table("accounts").Insert(account).Exec(session); err != nil {
+			writeError(err)
+			return 1
+		}
 	}
 
 	// Write a success message
 	fmt.Printf("Created a new account with ID %s\n", account.ID)
+	return 0
 }
 
-func accountsList(c *cli.Context) {
+func accountsList(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Get accounts without passwords from database
@@ -178,7 +201,7 @@ func accountsList(c *cli.Context) {
 	}).Run(session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	var accounts []struct {
 		models.Account
@@ -186,18 +209,17 @@ func accountsList(c *cli.Context) {
 	}
 	if err := cursor.All(&accounts); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write the output
 	if c.Bool("json") {
-		if err := json.NewEncoder(os.Stdout).Encode(accounts); err != nil {
+		if err := json.NewEncoder(c.App.Writer).Encode(accounts); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 
 		fmt.Print("\n")
-		return
 	} else {
 		table := termtables.CreateTable()
 		table.AddHeaders("id", "addresses", "subscription", "status", "date_created")
@@ -222,6 +244,7 @@ func accountsList(c *cli.Context) {
 			)
 		}
 		fmt.Println(table.Render())
-		return
 	}
+
+	return 0
 }

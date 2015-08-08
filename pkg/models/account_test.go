@@ -2,7 +2,6 @@ package models_test
 
 import (
 	"errors"
-	"log"
 	"testing"
 
 	"github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf"
@@ -24,15 +23,12 @@ func (d *dumbEncoder) Id() []byte {
 	return []byte("dumb")
 }
 func (d *dumbEncoder) Create(plain []byte) ([]byte, error) {
-	log.Printf("create - %v - %v", d.CreateByteR, d.CreateErrorR)
 	return d.CreateByteR, d.CreateErrorR
 }
 func (d *dumbEncoder) Verify(plain []byte, encoded []byte) (bool, error) {
-	log.Printf("verify - %v - %v", d.VerifyBoolR, d.VerifyErrorR)
 	return d.VerifyBoolR, d.VerifyErrorR
 }
 func (d *dumbEncoder) IsCurrent(encoded []byte) (bool, error) {
-	log.Printf("is_current - %v - %v", d.IsCurrentBoolR, d.IsCurrentErrorR)
 	return d.IsCurrentBoolR, d.IsCurrentErrorR
 }
 

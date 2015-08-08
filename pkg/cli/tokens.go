@@ -4,23 +4,23 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"time"
 
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
+	"github.com/pzduniak/cli"
 
 	"github.com/pgpst/pgpst/pkg/models"
 )
 
-func tokensAdd(c *cli.Context) {
+func tokensAdd(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Input struct
@@ -34,13 +34,13 @@ func tokensAdd(c *cli.Context) {
 
 	// Read JSON from stdin
 	if c.Bool("json") {
-		if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+		if err := json.NewDecoder(c.App.Env["reader"].(io.Reader)).Decode(&input); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 	} else {
 		// Buffer stdin
-		rd := bufio.NewReader(os.Stdin)
+		rd := bufio.NewReader(c.App.Env["reader"].(io.Reader))
 		var err error
 
 		// Acquire from interactive input
@@ -48,7 +48,7 @@ func tokensAdd(c *cli.Context) {
 		input.Owner, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		input.Owner = strings.TrimSpace(input.Owner)
 
@@ -56,7 +56,7 @@ func tokensAdd(c *cli.Context) {
 		input.Type, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		input.Type = strings.TrimSpace(input.Type)
 
@@ -64,14 +64,14 @@ func tokensAdd(c *cli.Context) {
 		expiryDate, err := rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		expiryDate = strings.TrimSpace(expiryDate)
 		if expiryDate != "" {
 			input.ExpiryDate, err = time.Parse(time.RFC3339, expiryDate)
 			if err != nil {
 				writeError(err)
-				return
+				return 1
 			}
 		}
 
@@ -80,7 +80,7 @@ func tokensAdd(c *cli.Context) {
 			input.ClientID, err = rd.ReadString('\n')
 			if err != nil {
 				writeError(err)
-				return
+				return 1
 			}
 			input.ClientID = strings.TrimSpace(input.ClientID)
 
@@ -88,7 +88,7 @@ func tokensAdd(c *cli.Context) {
 			scope, err := rd.ReadString('\n')
 			if err != nil {
 				writeError(err)
-				return
+				return 1
 			}
 			scope = strings.TrimSpace(scope)
 			input.Scope = strings.Split(scope, ",")
@@ -100,7 +100,7 @@ func tokensAdd(c *cli.Context) {
 	// Type has to be either auth or activate
 	if input.Type != "auth" && input.Type != "activate" {
 		writeError(fmt.Errorf("Token type must be either auth or activate. Got %s.", input.Type))
-		return
+		return 1
 	}
 
 	// Scopes must exist
@@ -108,7 +108,7 @@ func tokensAdd(c *cli.Context) {
 		for _, scope := range input.Scope {
 			if _, ok := models.Scopes[scope]; !ok {
 				writeError(fmt.Errorf("Scope %s doesn't exist", scope))
-				return
+				return 1
 			}
 		}
 	}
@@ -122,11 +122,11 @@ func tokensAdd(c *cli.Context) {
 	var exists bool
 	if err := cursor.One(&exists); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	if !exists {
 		writeError(fmt.Errorf("Account %s doesn't exist", input.Owner))
-		return
+		return 1
 	}
 
 	// Application must exist
@@ -139,11 +139,11 @@ func tokensAdd(c *cli.Context) {
 		var exists bool
 		if err := cursor.One(&exists); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		if !exists {
 			writeError(fmt.Errorf("Application %s doesn't exist", input.ClientID))
-			return
+			return 1
 		}
 	}
 
@@ -160,18 +160,19 @@ func tokensAdd(c *cli.Context) {
 	}
 	if err := r.Table("tokens").Insert(token).Exec(session); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write a success message
 	fmt.Printf("Created a new %s token with ID %s\n", token.Type, token.ID)
+	return 0
 }
 
-func tokensList(c *cli.Context) {
+func tokensList(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Get tokens from database
@@ -189,7 +190,7 @@ func tokensList(c *cli.Context) {
 	}).Run(session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	var tokens []struct {
 		models.Token
@@ -198,18 +199,17 @@ func tokensList(c *cli.Context) {
 	}
 	if err := cursor.All(&tokens); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write the output
 	if c.Bool("json") {
-		if err := json.NewEncoder(os.Stdout).Encode(tokens); err != nil {
+		if err := json.NewEncoder(c.App.Writer).Encode(tokens); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 
 		fmt.Print("\n")
-		return
 	} else {
 		table := termtables.CreateTable()
 		table.AddHeaders("id", "type", "owner", "client_name", "expired", "date_created")
@@ -224,6 +224,7 @@ func tokensList(c *cli.Context) {
 			)
 		}
 		fmt.Println(table.Render())
-		return
 	}
+
+	return 0
 }

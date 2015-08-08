@@ -3,23 +3,23 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"time"
 
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
+	"github.com/pzduniak/cli"
 
 	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"
 )
 
-func addressesAdd(c *cli.Context) {
+func addressesAdd(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Input struct
@@ -30,22 +30,22 @@ func addressesAdd(c *cli.Context) {
 
 	// Read JSON from stdin
 	if c.Bool("json") {
-		if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+		if err := json.NewDecoder(c.App.Env["reader"].(io.Reader)).Decode(&input); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 	} else {
 		// Acquire from interactive input
 		fmt.Print("Address: ")
 		if _, err := fmt.Scanln(&input.ID); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 
 		fmt.Print("Owner ID: ")
 		if _, err := fmt.Scanln(&input.Owner); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 	}
 
@@ -61,17 +61,17 @@ func addressesAdd(c *cli.Context) {
 	cursor, err := r.Table("addresses").Get(input.ID).Ne(nil).Run(session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	defer cursor.Close()
 	var taken bool
 	if err := cursor.One(&taken); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	if taken {
 		writeError(fmt.Errorf("Address %s is already taken", input.ID))
-		return
+		return 1
 	}
 
 	// Check if account ID exists
@@ -83,11 +83,11 @@ func addressesAdd(c *cli.Context) {
 	var exists bool
 	if err := cursor.One(&exists); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	if !exists {
 		writeError(fmt.Errorf("Account %s doesn't exist", input.ID))
-		return
+		return 1
 	}
 
 	// Insert the address into the database
@@ -99,18 +99,19 @@ func addressesAdd(c *cli.Context) {
 	}
 	if err := r.Table("addresses").Insert(address).Exec(session); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write a success message
 	fmt.Printf("Created a new address - %s\n", address.ID)
+	return 0
 }
 
-func addressesList(c *cli.Context) {
+func addressesList(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Get addresses from database
@@ -121,7 +122,7 @@ func addressesList(c *cli.Context) {
 	}).Run(session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	var addresses []struct {
 		models.Address
@@ -129,18 +130,17 @@ func addressesList(c *cli.Context) {
 	}
 	if err := cursor.All(&addresses); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write the output
 	if c.Bool("json") {
-		if err := json.NewEncoder(os.Stdout).Encode(addresses); err != nil {
+		if err := json.NewEncoder(c.App.Writer).Encode(addresses); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 
 		fmt.Print("\n")
-		return
 	} else {
 		table := termtables.CreateTable()
 		table.AddHeaders("address", "main_addresss", "date_created")
@@ -152,6 +152,7 @@ func addressesList(c *cli.Context) {
 			)
 		}
 		fmt.Println(table.Render())
-		return
 	}
+
+	return 0
 }

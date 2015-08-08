@@ -2,12 +2,12 @@ package cli
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"strconv"
 
 	"github.com/pgpst/pgpst/internal/github.com/cheggaaa/pb"
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
+	"github.com/pzduniak/cli"
 
 	"github.com/pgpst/pgpst/pkg/utils"
 )
@@ -37,36 +37,37 @@ func getDatabaseVersion(opts *r.ConnectOpts, session *r.Session) (int, error) {
 	return result, nil
 }
 
-func databaseVersion(c *cli.Context) {
+func databaseVersion(c *cli.Context) int {
 	// Connect to RethinkDB
 	opts, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Get the migration status from the database
 	version, err := getDatabaseVersion(opts, session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write it to stdout
 	fmt.Println(version)
+	return 0
 }
 
-func databaseMigrate(c *cli.Context) {
+func databaseMigrate(c *cli.Context) int {
 	// Connect to RethinkDB
 	opts, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Get the migration status from the database
 	version, err := getDatabaseVersion(opts, session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Show the current migration's status
@@ -76,30 +77,30 @@ func databaseMigrate(c *cli.Context) {
 	// Only proceed if the schema is outdated
 	if version >= len(migrations)-1 {
 		fmt.Println("Your schema is up to date.")
-		return
+		return 0
 	}
 
 	// I don't know why would anyone use it, but it's here
 	if c.Bool("no") {
 		fmt.Println("Aborting the command because of the --no option.")
-		return
+		return 1
 	}
 
 	// Ask for confirmations
 	if !c.Bool("yes") {
 		want, err := utils.AskForConfirmation(
-			os.Stdout,
-			os.Stdin,
+			c.App.Writer,
+			c.App.Env["reader"].(io.Reader),
 			"Would you like to run "+strconv.Itoa(len(migrations)-1-version)+" migrations? [y/n]: ",
 		)
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 
 		if !want {
 			fmt.Println("Aborting the command.")
-			return
+			return 1
 		}
 	}
 
@@ -115,15 +116,20 @@ func databaseMigrate(c *cli.Context) {
 	// Create a new progress bar
 	bar := pb.StartNew(len(queries))
 	for i, query := range queries {
-		if err := query.Exec(session); err != nil {
-			bar.FinishPrint("Failed to execute migration #" + strconv.Itoa(i) + ":")
-			fmt.Printf("\tQuery: %s\n", query.String())
-			fmt.Printf("\tError: %v\n", err)
-			return
+		if c.Bool("dry") {
+			fmt.Printf("Executing %s\n", query.String())
+		} else {
+			if err := query.Exec(session); err != nil {
+				bar.FinishPrint("Failed to execute migration #" + strconv.Itoa(i) + ":")
+				fmt.Printf("\tQuery: %s\n", query.String())
+				fmt.Printf("\tError: %v\n", err)
+				return 1
+			}
 		}
 		bar.Increment()
 	}
 
 	// Show a "finished" message
 	bar.FinishPrint("Migration completed. " + strconv.Itoa(len(queries)) + " queries executed.")
+	return 0
 }

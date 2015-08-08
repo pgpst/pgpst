@@ -4,24 +4,24 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"time"
 
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
+	"github.com/pzduniak/cli"
 
 	"github.com/pgpst/pgpst/pkg/models"
 )
 
-func applicationsAdd(c *cli.Context) {
+func applicationsAdd(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Input struct
@@ -35,13 +35,13 @@ func applicationsAdd(c *cli.Context) {
 
 	// Read JSON from stdin
 	if c.Bool("json") {
-		if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
+		if err := json.NewDecoder(c.App.Env["reader"].(io.Reader)).Decode(&input); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 	} else {
 		// Buffer stdin
-		rd := bufio.NewReader(os.Stdin)
+		rd := bufio.NewReader(c.App.Env["reader"].(io.Reader))
 		var err error
 
 		// Acquire from interactive input
@@ -49,7 +49,7 @@ func applicationsAdd(c *cli.Context) {
 		input.Owner, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		input.Owner = strings.TrimSpace(input.Owner)
 
@@ -57,7 +57,7 @@ func applicationsAdd(c *cli.Context) {
 		input.Name, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		input.Name = strings.TrimSpace(input.Name)
 
@@ -65,7 +65,7 @@ func applicationsAdd(c *cli.Context) {
 		input.Homepage, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		input.Homepage = strings.TrimSpace(input.Homepage)
 
@@ -73,7 +73,7 @@ func applicationsAdd(c *cli.Context) {
 		input.Description, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		input.Description = strings.TrimSpace(input.Description)
 
@@ -81,7 +81,7 @@ func applicationsAdd(c *cli.Context) {
 		input.Callback, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 		input.Callback = strings.TrimSpace(input.Callback)
 	}
@@ -91,13 +91,13 @@ func applicationsAdd(c *cli.Context) {
 	// Homepage URL should be a URL
 	if !govalidator.IsURL(input.Homepage) {
 		writeError(fmt.Errorf("%s is not a URL", input.Homepage))
-		return
+		return 1
 	}
 
 	// Callback URL should be a URL
 	if !govalidator.IsURL(input.Callback) {
 		writeError(fmt.Errorf("%s is not a URL", input.Callback))
-		return
+		return 1
 	}
 
 	// Check if account ID exists
@@ -109,11 +109,11 @@ func applicationsAdd(c *cli.Context) {
 	var exists bool
 	if err := cursor.One(&exists); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	if !exists {
 		writeError(fmt.Errorf("Account %s doesn't exist", input.Owner))
-		return
+		return 1
 	}
 
 	// Insert into database
@@ -130,18 +130,19 @@ func applicationsAdd(c *cli.Context) {
 	}
 	if err := r.Table("applications").Insert(application).Exec(session); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write a success message
 	fmt.Printf("Created a new application with ID %s\n", application.ID)
+	return 0
 }
 
-func applicationsList(c *cli.Context) {
+func applicationsList(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Get applications from database
@@ -152,7 +153,7 @@ func applicationsList(c *cli.Context) {
 	}).Run(session)
 	if err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 	var applications []struct {
 		models.Application
@@ -160,18 +161,17 @@ func applicationsList(c *cli.Context) {
 	}
 	if err := cursor.All(&applications); err != nil {
 		writeError(err)
-		return
+		return 1
 	}
 
 	// Write the output
 	if c.Bool("json") {
-		if err := json.NewEncoder(os.Stdout).Encode(applications); err != nil {
+		if err := json.NewEncoder(c.App.Writer).Encode(applications); err != nil {
 			writeError(err)
-			return
+			return 1
 		}
 
 		fmt.Print("\n")
-		return
 	} else {
 		table := termtables.CreateTable()
 		table.AddHeaders("id", "name", "owner", "homepage", "date_created")
@@ -185,6 +185,7 @@ func applicationsList(c *cli.Context) {
 			)
 		}
 		fmt.Println(table.Render())
-		return
 	}
+
+	return 0
 }
