@@ -3,7 +3,7 @@ package cli
 import (
 	"io"
 
-	"github.com/pzduniak/cli"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/cli"
 )
 
 const Reader = 0

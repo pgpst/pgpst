@@ -7,7 +7,7 @@ import (
 
 	"github.com/pgpst/pgpst/internal/github.com/cheggaaa/pb"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
-	"github.com/pzduniak/cli"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/cli"
 
 	"github.com/pgpst/pgpst/pkg/utils"
 )

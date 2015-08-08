@@ -13,8 +13,8 @@ import (
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
-	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
-	"github.com/pzduniak/cli"
+	"github.com/pzduniak/termtables"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/cli"
 	//"github.com/pzduniak/speakeasy"
 
 	"github.com/pgpst/pgpst/pkg/models"
