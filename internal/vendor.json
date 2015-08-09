@@ -240,6 +240,27 @@
 			"revisionTime": "2015-07-26T21:22:38+02:00"
 		},
 		{
+			"canonical": "github.com/pzduniak/termtables",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables",
+			"revision": "d758eb3df9c77089b5430beb463e1ddafb3a4024",
+			"revisionTime": "2015-08-09T21:39:25+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/termtables/locale",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables/locale",
+			"revision": "d758eb3df9c77089b5430beb463e1ddafb3a4024",
+			"revisionTime": "2015-08-09T21:39:25+02:00"
+		},
+		{
+			"canonical": "github.com/pzduniak/termtables/term",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables/term",
+			"revision": "d758eb3df9c77089b5430beb463e1ddafb3a4024",
+			"revisionTime": "2015-08-09T21:39:25+02:00"
+		},
+		{
 			"canonical": "github.com/smartystreets/assertions",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/smartystreets/assertions",
