@@ -3,6 +3,7 @@ package cli_test
 import (
 	"bytes"
 	"os"
+	"regexp"
 	"testing"
 
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
@@ -111,6 +112,11 @@ func TestCLI(t *testing.T) {
 		So(code, ShouldEqual, 0)
 		So(err, ShouldBeNil)
 
+		// Match the ID
+		expr := regexp.MustCompile(`Created a new account with ID (.*)\n`)
+		accountID := expr.FindStringSubmatch(output.String())[1]
+		So(accountID, ShouldNotBeEmpty)
+
 		// Invalid JSON input in account creation
 		input.Reset()
 		input.WriteString(`{@@@@@}`)
@@ -192,6 +198,29 @@ inactived
 		})
 		So(code, ShouldEqual, 1)
 		So(err, ShouldBeNil)
+
+		// Create a new application
+		input.Reset()
+		input.WriteString(`{
+	"owner": "` + accountID + `",
+	"callback": "https://example.org/callback",
+	"homepage": "https://example.org",
+	"name": "Example application",
+	"description": "An example application created using a test"
+}`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"apps",
+			"add",
+			"--json",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+
+		expr = regexp.MustCompile(`Created a new application with ID (.*)\n`)
+		applicationID := expr.FindStringSubmatch(output.String())[1]
+		So(applicationID, ShouldNotBeEmpty)
 
 		/*
 		   		Convey("accs add --json and accs add should succeed", func() {

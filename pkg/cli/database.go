@@ -47,12 +47,12 @@ func databaseVersion(c *cli.Context) int {
 	// Get the migration status from the database
 	version, err := getDatabaseVersion(opts, session)
 	if err != nil {
-		writeError(err)
+		writeError(c, err)
 		return 1
 	}
 
 	// Write it to stdout
-	fmt.Println(version)
+	fmt.Fprintln(c.App.Writer, version)
 	return 0
 }
 
@@ -66,23 +66,23 @@ func databaseMigrate(c *cli.Context) int {
 	// Get the migration status from the database
 	version, err := getDatabaseVersion(opts, session)
 	if err != nil {
-		writeError(err)
+		writeError(c, err)
 		return 1
 	}
 
 	// Show the current migration's status
-	fmt.Printf("Current database schema's version is %d.\n", version)
-	fmt.Printf("Latest migration's version is %d.\n", len(migrations)-1)
+	fmt.Fprintf(c.App.Writer, "Current database schema's version is %d.\n", version)
+	fmt.Fprintf(c.App.Writer, "Latest migration's version is %d.\n", len(migrations)-1)
 
 	// Only proceed if the schema is outdated
 	if version >= len(migrations)-1 {
-		fmt.Println("Your schema is up to date.")
+		fmt.Fprintln(c.App.Writer, "Your schema is up to date.")
 		return 0
 	}
 
 	// I don't know why would anyone use it, but it's here
 	if c.Bool("no") {
-		fmt.Println("Aborting the command because of the --no option.")
+		fmt.Fprintln(c.App.Writer, "Aborting the command because of the --no option.")
 		return 1
 	}
 
@@ -94,12 +94,12 @@ func databaseMigrate(c *cli.Context) int {
 			"Would you like to run "+strconv.Itoa(len(migrations)-1-version)+" migrations? [y/n]: ",
 		)
 		if err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 
 		if !want {
-			fmt.Println("Aborting the command.")
+			fmt.Fprintln(c.App.Writer, "Aborting the command.")
 			return 1
 		}
 	}
@@ -117,12 +117,12 @@ func databaseMigrate(c *cli.Context) int {
 	bar := pb.StartNew(len(queries))
 	for i, query := range queries {
 		if c.Bool("dry") {
-			fmt.Printf("Executing %s\n", query.String())
+			fmt.Fprintf(c.App.Writer, "Executing %s\n", query.String())
 		} else {
 			if err := query.Exec(session); err != nil {
 				bar.FinishPrint("Failed to execute migration #" + strconv.Itoa(i) + ":")
-				fmt.Printf("\tQuery: %s\n", query.String())
-				fmt.Printf("\tError: %v\n", err)
+				fmt.Fprintf(c.App.Writer, "\tQuery: %s\n", query.String())
+				fmt.Fprintf(c.App.Writer, "\tError: %v\n", err)
 				return 1
 			}
 		}

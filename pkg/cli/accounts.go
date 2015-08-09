@@ -13,9 +13,8 @@ import (
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
-	"github.com/pzduniak/termtables"
 	"github.com/pgpst/pgpst/internal/github.com/pzduniak/cli"
-	//"github.com/pzduniak/speakeasy"
+	"github.com/pzduniak/termtables"
 
 	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"
@@ -40,7 +39,7 @@ func accountsAdd(c *cli.Context) int {
 	// Read JSON from stdin
 	if c.Bool("json") {
 		if err := json.NewDecoder(c.App.Env["reader"].(io.Reader)).Decode(&input); err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 	} else {
@@ -49,48 +48,48 @@ func accountsAdd(c *cli.Context) int {
 		var err error
 
 		// Acquire from interactive input
-		fmt.Print("Main address: ")
+		fmt.Fprint(c.App.Writer, "Main address: ")
 		input.MainAddress, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 		input.MainAddress = strings.TrimSpace(input.MainAddress)
 
 		input.Password, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 		input.Password = strings.TrimSpace(input.Password)
 
 		/*password, err := speakeasy.FAsk(rd, "Password: ")
 		if err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 		input.Password = password*/
 
-		fmt.Print("Subscription [beta/admin]: ")
+		fmt.Fprint(c.App.Writer, "Subscription [beta/admin]: ")
 		input.Subscription, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 		input.Subscription = strings.TrimSpace(input.Subscription)
 
-		fmt.Print("Alternative address: ")
+		fmt.Fprint(c.App.Writer, "Alternative address: ")
 		input.AltEmail, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 		input.AltEmail = strings.TrimSpace(input.AltEmail)
 
-		fmt.Print("Status [inactive/active/suspended]: ")
+		fmt.Fprint(c.App.Writer, "Status [inactive/active/suspended]: ")
 		input.Status, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 		input.Status = strings.TrimSpace(input.Status)
@@ -109,17 +108,17 @@ func accountsAdd(c *cli.Context) int {
 	// Then check if it's taken.
 	cursor, err := r.Table("addresses").Get(input.MainAddress).Ne(nil).Run(session)
 	if err != nil {
-		writeError(err)
+		writeError(c, err)
 		return 1
 	}
 	defer cursor.Close()
 	var taken bool
 	if err := cursor.One(&taken); err != nil {
-		writeError(err)
+		writeError(c, err)
 		return 1
 	}
 	if taken {
-		writeError(fmt.Errorf("Address %s is already taken", input.MainAddress))
+		writeError(c, fmt.Errorf("Address %s is already taken", input.MainAddress))
 		return 1
 	}
 
@@ -131,19 +130,19 @@ func accountsAdd(c *cli.Context) int {
 
 	// Subscription has to be beta or admin
 	if input.Subscription != "beta" && input.Subscription != "admin" {
-		writeError(fmt.Errorf("Subscription has to be either beta or admin. Got %s.", input.Subscription))
+		writeError(c, fmt.Errorf("Subscription has to be either beta or admin. Got %s.", input.Subscription))
 		return 1
 	}
 
 	// AltEmail must be an email
 	if !govalidator.IsEmail(input.AltEmail) {
-		writeError(fmt.Errorf("Email %s has an incorrect format", input.AltEmail))
+		writeError(c, fmt.Errorf("Email %s has an incorrect format", input.AltEmail))
 		return 1
 	}
 
 	// Status has to be inactive/active/suspended
 	if input.Status != "inactive" && input.Status != "active" && input.Status != "suspended" {
-		writeError(fmt.Errorf("Status has to be either inactive, active or suspended. Got %s.", input.Status))
+		writeError(c, fmt.Errorf("Status has to be either inactive, active or suspended. Got %s.", input.Status))
 		return 1
 	}
 
@@ -158,7 +157,7 @@ func accountsAdd(c *cli.Context) int {
 		Status:       input.Status,
 	}
 	if err := account.SetPassword([]byte(input.Password)); err != nil {
-		writeError(err)
+		writeError(c, err)
 		return 1
 	}
 
@@ -172,17 +171,17 @@ func accountsAdd(c *cli.Context) int {
 	// Insert them into database
 	if !c.Bool("dry") {
 		if err := r.Table("addresses").Insert(address).Exec(session); err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 		if err := r.Table("accounts").Insert(account).Exec(session); err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 	}
 
 	// Write a success message
-	fmt.Printf("Created a new account with ID %s\n", account.ID)
+	fmt.Fprintf(c.App.Writer, "Created a new account with ID %s\n", account.ID)
 	return 0
 }
 
@@ -200,7 +199,7 @@ func accountsList(c *cli.Context) int {
 		})
 	}).Run(session)
 	if err != nil {
-		writeError(err)
+		writeError(c, err)
 		return 1
 	}
 	var accounts []struct {
@@ -208,18 +207,18 @@ func accountsList(c *cli.Context) int {
 		Addresses []*models.Address `gorethink:"addresses" json:"addresses`
 	}
 	if err := cursor.All(&accounts); err != nil {
-		writeError(err)
+		writeError(c, err)
 		return 1
 	}
 
 	// Write the output
 	if c.Bool("json") {
 		if err := json.NewEncoder(c.App.Writer).Encode(accounts); err != nil {
-			writeError(err)
+			writeError(c, err)
 			return 1
 		}
 
-		fmt.Print("\n")
+		fmt.Fprint(c.App.Writer, "\n")
 	} else {
 		table := termtables.CreateTable()
 		table.AddHeaders("id", "addresses", "subscription", "status", "date_created")
@@ -243,7 +242,7 @@ func accountsList(c *cli.Context) int {
 				account.DateCreated.Format(time.RubyDate),
 			)
 		}
-		fmt.Println(table.Render())
+		fmt.Fprintln(c.App.Writer, table.Render())
 	}
 
 	return 0
