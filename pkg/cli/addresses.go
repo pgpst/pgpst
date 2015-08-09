@@ -117,7 +117,7 @@ func addressesAdd(c *cli.Context) int {
 	}
 
 	// Write a success message
-	fmt.Fprintf(c.App.Writer, "Created a new address - %s (styled %s)\n", address.ID, address.StyledID)
+	fmt.Fprintf(c.App.Writer, "Created a new address - %s\n", address.StyledID)
 	return 0
 }
 
@@ -157,10 +157,9 @@ func addressesList(c *cli.Context) int {
 		fmt.Fprintf(c.App.Writer, "\n")
 	} else {
 		table := termtables.CreateTable()
-		table.AddHeaders("address", "styled_address", "main_address", "date_created")
+		table.AddHeaders("address", "main_address", "date_created")
 		for _, address := range addresses {
 			table.AddRow(
-				address.ID,
 				address.StyledID,
 				address.MainAddress,
 				address.DateCreated.Format(time.RubyDate),

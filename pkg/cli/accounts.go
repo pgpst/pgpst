@@ -229,10 +229,10 @@ func accountsList(c *cli.Context) int {
 
 			for _, address := range account.Addresses {
 				if address.ID == account.MainAddress {
-					address.ID = fmt.Sprintf("* %s (styled: %s)", address.ID, address.StyledID)
-					emails = append([]string{address.ID}, emails...)
+					address.StyledID = "*" + address.StyledID
+					emails = append([]string{address.StyledID}, emails...)
 				} else {
-					emails = append(emails, address.ID)
+					emails = append(emails, address.StyledID)
 				}
 			}
 
