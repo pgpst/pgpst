@@ -45,6 +45,7 @@ import (
 //   :delete
 
 var Scopes = map[string]struct{}{
+	"admin":               {},
 	"account":             {},
 	"account:read":        {},
 	"account:address":     {},
