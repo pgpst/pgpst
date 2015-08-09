@@ -76,6 +76,10 @@ func Run(r io.Reader, w io.Writer, args []string) (int, error) {
 							Name:  "json",
 							Usage: "Read JSON from stdin",
 						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
+						},
 					},
 					Action: addressesAdd,
 				},
@@ -104,6 +108,10 @@ func Run(r io.Reader, w io.Writer, args []string) (int, error) {
 						cli.BoolFlag{
 							Name:  "json",
 							Usage: "Read JSON from stdin",
+						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
 						},
 					},
 					Action: applicationsAdd,
@@ -164,6 +172,10 @@ func Run(r io.Reader, w io.Writer, args []string) (int, error) {
 						cli.BoolFlag{
 							Name:  "json",
 							Usage: "Read JSON from stdin",
+						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
 						},
 					},
 					Action: tokensAdd,

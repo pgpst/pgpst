@@ -88,22 +88,11 @@ func applicationsAdd(c *cli.Context) int {
 
 	// Validate the input
 
-	// Homepage URL should be a URL
-	if !govalidator.IsURL(input.Homepage) {
-		writeError(c, fmt.Errorf("%s is not a URL", input.Homepage))
-		return 1
-	}
-
-	// Callback URL should be a URL
-	if !govalidator.IsURL(input.Callback) {
-		writeError(c, fmt.Errorf("%s is not a URL", input.Callback))
-		return 1
-	}
-
 	// Check if account ID exists
 	cursor, err := r.Table("accounts").Get(input.Owner).Ne(nil).Run(session)
 	if err != nil {
 		writeError(c, err)
+		return 1
 	}
 	defer cursor.Close()
 	var exists bool
@@ -113,6 +102,18 @@ func applicationsAdd(c *cli.Context) int {
 	}
 	if !exists {
 		writeError(c, fmt.Errorf("Account %s doesn't exist", input.Owner))
+		return 1
+	}
+
+	// Homepage URL should be a URL
+	if !govalidator.IsURL(input.Homepage) {
+		writeError(c, fmt.Errorf("%s is not a URL", input.Homepage))
+		return 1
+	}
+
+	// Callback URL should be a URL
+	if !govalidator.IsURL(input.Callback) {
+		writeError(c, fmt.Errorf("%s is not a URL", input.Callback))
 		return 1
 	}
 
@@ -128,9 +129,12 @@ func applicationsAdd(c *cli.Context) int {
 		Name:         input.Name,
 		Description:  input.Description,
 	}
-	if err := r.Table("applications").Insert(application).Exec(session); err != nil {
-		writeError(c, err)
-		return 1
+
+	if !c.GlobalBool("dry") {
+		if err := r.Table("applications").Insert(application).Exec(session); err != nil {
+			writeError(c, err)
+			return 1
+		}
 	}
 
 	// Write a success message

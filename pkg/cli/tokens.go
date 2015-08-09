@@ -158,9 +158,12 @@ func tokensAdd(c *cli.Context) int {
 		Scope:        input.Scope,
 		ClientID:     input.ClientID,
 	}
-	if err := r.Table("tokens").Insert(token).Exec(session); err != nil {
-		writeError(c, err)
-		return 1
+
+	if !c.GlobalBool("dry") {
+		if err := r.Table("tokens").Insert(token).Exec(session); err != nil {
+			writeError(c, err)
+			return 1
+		}
 	}
 
 	// Write a success message

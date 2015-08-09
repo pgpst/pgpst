@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 	"testing"
+	"time"
 
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	. "github.com/pgpst/pgpst/internal/github.com/smartystreets/goconvey/convey"
@@ -221,6 +222,351 @@ inactived
 		expr = regexp.MustCompile(`Created a new application with ID (.*)\n`)
 		applicationID := expr.FindStringSubmatch(output.String())[1]
 		So(applicationID, ShouldNotBeEmpty)
+
+		// Invalid JSON input in application creation
+		input.Reset()
+		input.WriteString(`{@@@@@}`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"apps",
+			"add",
+			"--json",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		// Dry-create a new application using invalid manual inputs
+		input.Reset()
+		input.WriteString(`ownerid
+appname
+homepageurl
+description
+callback
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"apps",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(accountID + `
+appname
+homepageurl::
+description
+callback
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"apps",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(accountID + `
+appname
+http://example.org
+description
+callback::
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"apps",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		// Create a new token
+		input.Reset()
+		input.WriteString(`{
+	"owner": "` + accountID + `",
+	"expiry_date": "` + time.Now().Add(time.Hour*24).Format(time.RFC3339) + `",
+	"type": "auth",
+	"scope": ["applications", "resources", "tokens"],
+	"client_id": "` + applicationID + `"
+}`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--json",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+
+		expr = regexp.MustCompile(`Created a new auth token with ID (.*)\n`)
+		tokenID := expr.FindStringSubmatch(output.String())[1]
+		So(applicationID, ShouldNotBeEmpty)
+
+		// Invalid JSON input in token creation
+		input.Reset()
+		input.WriteString(`{@@@@@}`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--json",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		// Dry-create a new token using invalid manual inputs
+		input.Reset()
+		input.WriteString(`ownerid
+authed
+notapropertimestring
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(`ownerid
+authed
+` + time.Now().Add(time.Hour*24).Format(time.RFC3339) + `
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(`ownerid
+auth
+` + time.Now().Add(time.Hour*24).Format(time.RFC3339) + `
+clientid
+notinscopes
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(`ownerid
+authed
+` + time.Now().Add(time.Hour*24).Format(time.RFC3339) + `
+clientid
+notinscopes
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(`ownerid
+auth
+` + time.Now().Add(time.Hour*24).Format(time.RFC3339) + `
+clientid
+account
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(accountID + `
+auth
+` + time.Now().Add(time.Hour*24).Format(time.RFC3339) + `
+clientid
+account
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		// Create a new address
+		input.Reset()
+		input.WriteString(`{
+	"id": "test123123",
+	"owner": "` + accountID + `"
+}`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"addrs",
+			"add",
+			"--json",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+
+		// Invalid input address creation
+		input.Reset()
+		input.WriteString(`{@@@@@}`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"addrs",
+			"add",
+			"--json",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		// Dry-create a new address using invalid manual inputs
+		input.Reset()
+		input.WriteString(`test123x
+ownerid
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"addrs",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		input.Reset()
+		input.WriteString(`test123123123
+ownerid
+`)
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"addrs",
+			"add",
+			"--dry",
+		})
+		So(code, ShouldEqual, 1)
+		So(err, ShouldBeNil)
+
+		// Check existence in list commands
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"accs",
+			"list",
+			"--json",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, "\""+accountID+"\"")
+
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"accs",
+			"list",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, accountID)
+
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"addrs",
+			"list",
+			"--json",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, "\"test123x@pgp.st\"")
+		So(output.String(), ShouldContainSubstring, "\"test123123@pgp.st\"")
+
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"addrs",
+			"list",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, "test123x@pgp.st")
+		So(output.String(), ShouldContainSubstring, "test123123@pgp.st")
+
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"apps",
+			"list",
+			"--json",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, "\""+applicationID+"\"")
+
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"apps",
+			"list",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, applicationID)
+
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"list",
+			"--json",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, "\""+tokenID+"\"")
+
+		output.Reset()
+		code, err = cli.Run(input, output, []string{
+			"pgpst-cli",
+			"toks",
+			"list",
+		})
+		So(code, ShouldEqual, 0)
+		So(err, ShouldBeNil)
+		So(output.String(), ShouldContainSubstring, tokenID)
 
 		/*
 		   		Convey("accs add --json and accs add should succeed", func() {

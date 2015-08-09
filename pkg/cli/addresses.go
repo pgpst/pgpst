@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,23 +36,31 @@ func addressesAdd(c *cli.Context) int {
 			return 1
 		}
 	} else {
+		// Buffer stdin
+		rd := bufio.NewReader(c.App.Env["reader"].(io.Reader))
+		var err error
+
 		// Acquire from interactive input
 		fmt.Fprintf(c.App.Writer, "Address: ")
-		if _, err := fmt.Scanln(&input.ID); err != nil {
+		input.ID, err = rd.ReadString('\n')
+		if err != nil {
 			writeError(c, err)
 			return 1
 		}
+		input.ID = strings.TrimSpace(input.ID)
 
 		fmt.Fprintf(c.App.Writer, "Owner ID: ")
-		if _, err := fmt.Scanln(&input.Owner); err != nil {
+		input.Owner, err = rd.ReadString('\n')
+		if err != nil {
 			writeError(c, err)
 			return 1
 		}
+		input.Owner = strings.TrimSpace(input.Owner)
 	}
 
 	// First of all, the address. Append domain if it has no such suffix.
 	if strings.Index(input.ID, "@") == -1 {
-		input.ID += "@" + c.String("default_domain")
+		input.ID += "@" + c.GlobalString("default_domain")
 	}
 
 	// And format it
@@ -97,9 +106,12 @@ func addressesAdd(c *cli.Context) int {
 		DateModified: time.Now(),
 		Owner:        input.Owner,
 	}
-	if err := r.Table("addresses").Insert(address).Exec(session); err != nil {
-		writeError(c, err)
-		return 1
+
+	if !c.GlobalBool("dry") {
+		if err := r.Table("addresses").Insert(address).Exec(session); err != nil {
+			writeError(c, err)
+			return 1
+		}
 	}
 
 	// Write a success message
