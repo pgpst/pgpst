@@ -1,9 +1,9 @@
 package api
 
 import (
-	"flag"
 	"time"
 
+	"github.com/pgpst/pgpst/internal/github.com/namsral/flag"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
 )
 

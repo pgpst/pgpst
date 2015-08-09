@@ -266,3 +266,108 @@ func (a *API) createAccount(c *gin.Context) {
 	})
 	return
 }
+
+func (a *API) readAccount(c *gin.Context) {
+	// Get token and account info from the context
+	var (
+		ownAccount = c.MustGet("account").(*models.Account)
+		token      = c.MustGet("token").(*models.Token)
+	)
+
+	// Resolve the account ID and check scope accordingly
+	id := c.Param("id")
+	if id == "me" {
+		// Swap the ID to own account's ID
+		id = ownAccount.ID
+	}
+
+	if id == ownAccount.ID {
+		// Check the scope
+		if !models.InScope(token.Scope, []string{"account:read"}) {
+			c.JSON(403, &gin.H{
+				"code":  0,
+				"error": "Your token has insufficient scope",
+			})
+			return
+		}
+
+		// Get addresses from database
+		cursor, err := r.Table("addresses").GetAllByIndex("owner", id).Run(a.Rethink)
+		if err != nil {
+			c.JSON(500, &gin.H{
+				"code":  0,
+				"error": err.Error(),
+			})
+			return
+		}
+		defer cursor.Close()
+		var addresses []*models.Address
+		if err := cursor.All(&addresses); err != nil {
+			c.JSON(500, &gin.H{
+				"code":  0,
+				"error": err.Error(),
+			})
+			return
+		}
+
+		ownAccount.Password = nil
+
+		// Write the response
+		c.JSON(200, struct {
+			*models.Account
+			Addresses []*models.Address `json:"addresses"`
+		}{
+			Account:   ownAccount,
+			Addresses: addresses,
+		})
+		return
+	}
+	// Check the scope
+	if !models.InScope(token.Scope, []string{"admin"}) {
+		c.JSON(403, &gin.H{
+			"code":  0,
+			"error": "Your token has insufficient scope",
+		})
+		return
+	}
+
+	// Fetch the account
+	cursor, err := r.Table("accounts").Get(id).Do(func(account r.Term) r.Term {
+		return r.Branch(
+			account.Eq(nil),
+			map[string]interface{}{},
+			account.Without("password").Merge(map[string]interface{}{
+				"addresses": r.Table("addresses").GetAllByIndex("owner", account.Field("id")),
+			}),
+		)
+	}).Run(a.Rethink)
+	if err != nil {
+		c.JSON(500, &gin.H{
+			"code":  0,
+			"error": err.Error(),
+		})
+		return
+	}
+	defer cursor.Close()
+	var result struct {
+		models.Account
+		Addresses []*models.Address `json:"addresses"`
+	}
+	if err := cursor.One(&result); err != nil {
+		c.JSON(500, &gin.H{
+			"code":  0,
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if result.ID == "" {
+		c.JSON(404, &gin.H{
+			"code":  0,
+			"error": "Account not found",
+		})
+		return
+	}
+
+	c.JSON(200, result)
+}

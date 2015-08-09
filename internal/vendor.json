@@ -191,6 +191,13 @@
 			"revisionTime": "2014-11-25T06:40:23-08:00"
 		},
 		{
+			"canonical": "github.com/namsral/flag",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/namsral/flag",
+			"revision": "bd57b3fc9ada8271ff812ba54f938fe72749d969",
+			"revisionTime": "2015-04-01T12:53:11+02:00"
+		},
+		{
 			"canonical": "github.com/olekukonko/ts",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/olekukonko/ts",

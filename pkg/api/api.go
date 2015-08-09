@@ -84,11 +84,11 @@ func (a *API) Main() {
 		//v1.GET("/keys/:id", a.readKey)        // Open keyserver
 
 		// Create a subrouter
-		//v1a := v1.Group("/", a.authMiddleware)
+		v1a := v1.Group("/", a.authMiddleware)
 		{
 			// Accounts
 			//v1a.GET("/accounts", a.listAccounts)
-			//v1a.GET("/accounts/:id", a.readAccount)
+			v1a.GET("/accounts/:id", a.readAccount)
 			//v1a.PUT("/accounts/:id", a.updateAccount)
 			//v1a.DELETE("/accounts/:id", a.deleteAccount)
 
@@ -140,7 +140,9 @@ func (a *API) Main() {
 	}
 
 	// Log that we're about to start the server
-	a.Log.Info("Starting the server")
+	a.Log.WithFields(logrus.Fields{
+		"address": a.Options.HTTPAddress,
+	}).Info("Starting the server")
 
 	// Start the server
 	if err := router.Run(a.Options.HTTPAddress); err != nil {

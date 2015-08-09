@@ -1,11 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/pgpst/pgpst/internal/github.com/namsral/flag"
 
 	"github.com/pgpst/pgpst/pkg/api"
 	"github.com/pgpst/pgpst/pkg/version"
