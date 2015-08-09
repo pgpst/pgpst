@@ -103,7 +103,8 @@ func accountsAdd(c *cli.Context) int {
 	}
 
 	// And format it
-	input.MainAddress = utils.NormalizeAddress(input.MainAddress)
+	styledID := utils.NormalizeAddress(input.MainAddress)
+	input.MainAddress = utils.RemoveDots(styledID)
 
 	// Then check if it's taken.
 	cursor, err := r.Table("addresses").Get(input.MainAddress).Ne(nil).Run(session)
@@ -163,6 +164,7 @@ func accountsAdd(c *cli.Context) int {
 
 	address := &models.Address{
 		ID:           input.MainAddress,
+		StyledID:     styledID,
 		DateCreated:  time.Now(),
 		DateModified: time.Now(),
 		Owner:        account.ID,
@@ -227,10 +229,10 @@ func accountsList(c *cli.Context) int {
 
 			for _, address := range account.Addresses {
 				if address.ID == account.MainAddress {
-					address.ID = "*" + address.ID
-					emails = append([]string{address.ID}, emails...)
+					address.StyledID = "*" + address.StyledID
+					emails = append([]string{address.StyledID}, emails...)
 				} else {
-					emails = append(emails, address.ID)
+					emails = append(emails, address.StyledID)
 				}
 			}
 

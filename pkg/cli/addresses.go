@@ -64,7 +64,8 @@ func addressesAdd(c *cli.Context) int {
 	}
 
 	// And format it
-	input.ID = utils.NormalizeAddress(input.ID)
+	styledID := utils.NormalizeAddress(input.ID)
+	input.ID = utils.RemoveDots(styledID)
 
 	// Then check if it's taken.
 	cursor, err := r.Table("addresses").Get(input.ID).Ne(nil).Run(session)
@@ -102,6 +103,7 @@ func addressesAdd(c *cli.Context) int {
 	// Insert the address into the database
 	address := &models.Address{
 		ID:           input.ID,
+		StyledID:     styledID,
 		DateCreated:  time.Now(),
 		DateModified: time.Now(),
 		Owner:        input.Owner,
@@ -115,7 +117,7 @@ func addressesAdd(c *cli.Context) int {
 	}
 
 	// Write a success message
-	fmt.Fprintf(c.App.Writer, "Created a new address - %s\n", address.ID)
+	fmt.Fprintf(c.App.Writer, "Created a new address - %s\n", address.StyledID)
 	return 0
 }
 
@@ -155,10 +157,10 @@ func addressesList(c *cli.Context) int {
 		fmt.Fprintf(c.App.Writer, "\n")
 	} else {
 		table := termtables.CreateTable()
-		table.AddHeaders("address", "main_addresss", "date_created")
+		table.AddHeaders("address", "main_address", "date_created")
 		for _, address := range addresses {
 			table.AddRow(
-				address.ID,
+				address.StyledID,
 				address.MainAddress,
 				address.DateCreated.Format(time.RubyDate),
 			)
