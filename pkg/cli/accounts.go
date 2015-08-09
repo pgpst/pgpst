@@ -56,6 +56,7 @@ func accountsAdd(c *cli.Context) int {
 		}
 		input.MainAddress = strings.TrimSpace(input.MainAddress)
 
+		fmt.Fprint(c.App.Writer, "Password: ")
 		input.Password, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(c, err)
