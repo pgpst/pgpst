@@ -64,7 +64,8 @@ func addressesAdd(c *cli.Context) int {
 	}
 
 	// And format it
-	input.ID = utils.NormalizeAddress(input.ID)
+	styledID := utils.NormalizeAddress(input.ID)
+	input.ID = utils.RemoveDots(styledID)
 
 	// Then check if it's taken.
 	cursor, err := r.Table("addresses").Get(input.ID).Ne(nil).Run(session)
@@ -102,6 +103,7 @@ func addressesAdd(c *cli.Context) int {
 	// Insert the address into the database
 	address := &models.Address{
 		ID:           input.ID,
+		StyledID:     styledID,
 		DateCreated:  time.Now(),
 		DateModified: time.Now(),
 		Owner:        input.Owner,

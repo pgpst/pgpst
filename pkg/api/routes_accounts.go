@@ -38,7 +38,8 @@ func (a *API) createAccount(c *gin.Context) {
 		//  - alt_email - desired email
 
 		// Normalize the username
-		nu := utils.RemoveDots(utils.NormalizeUsername(input.Username))
+		styledID := utils.NormalizeUsername(input.Username)
+		nu := utils.RemoveDots(styledID)
 
 		// Validate input:
 		// - len(username) >= 3 && len(username) <= 32
@@ -107,6 +108,7 @@ func (a *API) createAccount(c *gin.Context) {
 		// Create an account and an address
 		address := &models.Address{
 			ID:          nu + "@pgp.st",
+			StyledID:    styledID + "@pgp.st",
 			DateCreated: time.Now(),
 			Owner:       "", // we set it later
 		}
