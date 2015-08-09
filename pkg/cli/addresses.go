@@ -157,7 +157,7 @@ func addressesList(c *cli.Context) int {
 		fmt.Fprintf(c.App.Writer, "\n")
 	} else {
 		table := termtables.CreateTable()
-		table.AddHeaders("address", "styled_address", "main_addresss", "date_created")
+		table.AddHeaders("address", "styled_address", "main_address", "date_created")
 		for _, address := range addresses {
 			table.AddRow(
 				address.ID,
