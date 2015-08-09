@@ -9,5 +9,5 @@ import (
 
 func main() {
 	defer utils.CLIRecovery(os.Stderr)
-	cli.Run()
+	cli.Run(os.Stdin, os.Stdout, os.Args)
 }

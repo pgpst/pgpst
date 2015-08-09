@@ -1,12 +1,14 @@
 package cli
 
 import (
-	"os"
+	"io"
 
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/cli"
 )
 
-func Run() {
+const Reader = 0
+
+func Run(r io.Reader, w io.Writer, args []string) (int, error) {
 	app := cli.NewApp()
 
 	app.Name = "pgpst-cli"
@@ -41,6 +43,10 @@ func Run() {
 							Name:  "json",
 							Usage: "Read JSON from stdin",
 						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
+						},
 					},
 					Action: accountsAdd,
 				},
@@ -70,6 +76,10 @@ func Run() {
 							Name:  "json",
 							Usage: "Read JSON from stdin",
 						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
+						},
 					},
 					Action: addressesAdd,
 				},
@@ -98,6 +108,10 @@ func Run() {
 						cli.BoolFlag{
 							Name:  "json",
 							Usage: "Read JSON from stdin",
+						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
 						},
 					},
 					Action: applicationsAdd,
@@ -132,6 +146,10 @@ func Run() {
 							Name:  "no",
 							Usage: "Say no to the prompt",
 						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
+						},
 					},
 					Action: databaseMigrate,
 				},
@@ -155,6 +173,10 @@ func Run() {
 							Name:  "json",
 							Usage: "Read JSON from stdin",
 						},
+						cli.BoolFlag{
+							Name:  "dry",
+							Usage: "Start a dry run",
+						},
 					},
 					Action: tokensAdd,
 				},
@@ -173,5 +195,8 @@ func Run() {
 		},
 	}
 
-	app.Run(os.Args)
+	app.Writer = w
+	app.Env["reader"] = r
+
+	return app.Run(args)
 }

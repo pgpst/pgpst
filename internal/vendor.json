@@ -198,6 +198,13 @@
 			"revisionTime": "2014-04-12T15:01:45-07:00"
 		},
 		{
+			"canonical": "github.com/pzduniak/cli",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/cli",
+			"revision": "b29dcb98e4d793841fbf70fb7397c869f552aa1f",
+			"revisionTime": "2015-08-08T22:44:41+02:00"
+		},
+		{
 			"canonical": "github.com/pzduniak/mcf",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf",
@@ -231,27 +238,6 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/mcf/scrypt",
 			"revision": "51031d0d536dcbb00139bdc0abe4d7905363c7d2",
 			"revisionTime": "2015-07-26T21:22:38+02:00"
-		},
-		{
-			"canonical": "github.com/pzduniak/termtables",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables",
-			"revision": "d7efb6c42bbf9b75e8559fd5b8205cb656ae9ff4",
-			"revisionTime": "2015-08-04T22:43:49+02:00"
-		},
-		{
-			"canonical": "github.com/pzduniak/termtables/locale",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables/locale",
-			"revision": "d7efb6c42bbf9b75e8559fd5b8205cb656ae9ff4",
-			"revisionTime": "2015-08-04T22:43:49+02:00"
-		},
-		{
-			"canonical": "github.com/pzduniak/termtables/term",
-			"comment": "",
-			"local": "github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables/term",
-			"revision": "d7efb6c42bbf9b75e8559fd5b8205cb656ae9ff4",
-			"revisionTime": "2015-08-04T22:43:49+02:00"
 		},
 		{
 			"canonical": "github.com/smartystreets/assertions",

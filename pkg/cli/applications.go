@@ -4,24 +4,24 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"time"
 
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
-	"github.com/pgpst/pgpst/internal/github.com/codegangsta/cli"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
-	"github.com/pgpst/pgpst/internal/github.com/pzduniak/termtables"
+	"github.com/pgpst/pgpst/internal/github.com/pzduniak/cli"
+	"github.com/pzduniak/termtables"
 
 	"github.com/pgpst/pgpst/pkg/models"
 )
 
-func applicationsAdd(c *cli.Context) {
+func applicationsAdd(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Input struct
@@ -35,85 +35,86 @@ func applicationsAdd(c *cli.Context) {
 
 	// Read JSON from stdin
 	if c.Bool("json") {
-		if err := json.NewDecoder(os.Stdin).Decode(&input); err != nil {
-			writeError(err)
-			return
+		if err := json.NewDecoder(c.App.Env["reader"].(io.Reader)).Decode(&input); err != nil {
+			writeError(c, err)
+			return 1
 		}
 	} else {
 		// Buffer stdin
-		rd := bufio.NewReader(os.Stdin)
+		rd := bufio.NewReader(c.App.Env["reader"].(io.Reader))
 		var err error
 
 		// Acquire from interactive input
-		fmt.Print("Owner's ID: ")
+		fmt.Fprint(c.App.Writer, "Owner's ID: ")
 		input.Owner, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
-			return
+			writeError(c, err)
+			return 1
 		}
 		input.Owner = strings.TrimSpace(input.Owner)
 
-		fmt.Print("Application's name: ")
+		fmt.Fprint(c.App.Writer, "Application's name: ")
 		input.Name, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
-			return
+			writeError(c, err)
+			return 1
 		}
 		input.Name = strings.TrimSpace(input.Name)
 
-		fmt.Print("Homepage URL: ")
+		fmt.Fprint(c.App.Writer, "Homepage URL: ")
 		input.Homepage, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
-			return
+			writeError(c, err)
+			return 1
 		}
 		input.Homepage = strings.TrimSpace(input.Homepage)
 
-		fmt.Print("Description: ")
+		fmt.Fprint(c.App.Writer, "Description: ")
 		input.Description, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
-			return
+			writeError(c, err)
+			return 1
 		}
 		input.Description = strings.TrimSpace(input.Description)
 
-		fmt.Print("Callback URL: ")
+		fmt.Fprint(c.App.Writer, "Callback URL: ")
 		input.Callback, err = rd.ReadString('\n')
 		if err != nil {
-			writeError(err)
-			return
+			writeError(c, err)
+			return 1
 		}
 		input.Callback = strings.TrimSpace(input.Callback)
 	}
 
 	// Validate the input
 
-	// Homepage URL should be a URL
-	if !govalidator.IsURL(input.Homepage) {
-		writeError(fmt.Errorf("%s is not a URL", input.Homepage))
-		return
-	}
-
-	// Callback URL should be a URL
-	if !govalidator.IsURL(input.Callback) {
-		writeError(fmt.Errorf("%s is not a URL", input.Callback))
-		return
-	}
-
 	// Check if account ID exists
 	cursor, err := r.Table("accounts").Get(input.Owner).Ne(nil).Run(session)
 	if err != nil {
-		writeError(err)
+		writeError(c, err)
+		return 1
 	}
 	defer cursor.Close()
 	var exists bool
 	if err := cursor.One(&exists); err != nil {
-		writeError(err)
-		return
+		writeError(c, err)
+		return 1
 	}
 	if !exists {
-		writeError(fmt.Errorf("Account %s doesn't exist", input.Owner))
-		return
+		writeError(c, fmt.Errorf("Account %s doesn't exist", input.Owner))
+		return 1
+	}
+
+	// Homepage URL should be a URL
+	if !govalidator.IsURL(input.Homepage) {
+		writeError(c, fmt.Errorf("%s is not a URL", input.Homepage))
+		return 1
+	}
+
+	// Callback URL should be a URL
+	if !govalidator.IsURL(input.Callback) {
+		writeError(c, fmt.Errorf("%s is not a URL", input.Callback))
+		return 1
 	}
 
 	// Insert into database
@@ -128,20 +129,24 @@ func applicationsAdd(c *cli.Context) {
 		Name:         input.Name,
 		Description:  input.Description,
 	}
-	if err := r.Table("applications").Insert(application).Exec(session); err != nil {
-		writeError(err)
-		return
+
+	if !c.GlobalBool("dry") {
+		if err := r.Table("applications").Insert(application).Exec(session); err != nil {
+			writeError(c, err)
+			return 1
+		}
 	}
 
 	// Write a success message
-	fmt.Printf("Created a new application with ID %s\n", application.ID)
+	fmt.Fprintf(c.App.Writer, "Created a new application with ID %s\n", application.ID)
+	return 0
 }
 
-func applicationsList(c *cli.Context) {
+func applicationsList(c *cli.Context) int {
 	// Connect to RethinkDB
 	_, session, connected := connectToRethinkDB(c)
 	if !connected {
-		return
+		return 1
 	}
 
 	// Get applications from database
@@ -151,27 +156,26 @@ func applicationsList(c *cli.Context) {
 		})
 	}).Run(session)
 	if err != nil {
-		writeError(err)
-		return
+		writeError(c, err)
+		return 1
 	}
 	var applications []struct {
 		models.Application
 		OwnersAddress string `gorethink:"owners_address" json:"owners_address"`
 	}
 	if err := cursor.All(&applications); err != nil {
-		writeError(err)
-		return
+		writeError(c, err)
+		return 1
 	}
 
 	// Write the output
 	if c.Bool("json") {
-		if err := json.NewEncoder(os.Stdout).Encode(applications); err != nil {
-			writeError(err)
-			return
+		if err := json.NewEncoder(c.App.Writer).Encode(applications); err != nil {
+			writeError(c, err)
+			return 1
 		}
 
-		fmt.Print("\n")
-		return
+		fmt.Fprint(c.App.Writer, "\n")
 	} else {
 		table := termtables.CreateTable()
 		table.AddHeaders("id", "name", "owner", "homepage", "date_created")
@@ -184,7 +188,8 @@ func applicationsList(c *cli.Context) {
 				application.DateCreated.Format(time.RubyDate),
 			)
 		}
-		fmt.Println(table.Render())
-		return
+		fmt.Fprintln(c.App.Writer, table.Render())
 	}
+
+	return 0
 }
