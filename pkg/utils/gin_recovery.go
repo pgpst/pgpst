@@ -3,7 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
-	//"runtime/debug"
+	"runtime/debug"
 
 	"github.com/pgpst/pgpst/internal/github.com/getsentry/raven-go"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
@@ -30,6 +30,8 @@ func GinRecovery(rc *raven.Client) gin.HandlerFunc {
 					raven.NewException(errors.New(str), raven.NewStacktrace(2, 3, nil)),
 				)
 			}
+
+			debug.PrintStack()
 
 			c.JSON(500, &gin.H{
 				"code":  500,

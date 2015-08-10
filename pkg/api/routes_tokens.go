@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/hex"
+	"strings"
 	"time"
 
-	//"github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
+	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
 
 	"github.com/pgpst/pgpst/pkg/models"
@@ -23,6 +24,7 @@ func (a *API) createToken(c *gin.Context) {
 		ClientSecret string `json:"client_secret"`
 		Address      string `json:"username"`
 		Password     string `json:"password"`
+		ExpiryTime   int64  `json:"expiry_time"`
 	}
 	if err := c.Bind(&input); err != nil {
 		c.JSON(422, &gin.H{
@@ -42,9 +44,15 @@ func (a *API) createToken(c *gin.Context) {
 		//  - client_secret - secret of the client app
 	case "password":
 		// Parameters:
-		//  - username  - account's username
-		//  - password  - sha256 of the account's password
-		//  - client_id - id of the client app used for stats
+		//  - username    - account's username
+		//  - password    - sha256 of the account's password
+		//  - client_id   - id of the client app used for stats
+		//  - expiry_time - seconds until token expires
+
+		// If there's no domain, append default domain
+		if strings.Index(input.Address, "@") == -1 {
+			input.Address += "@" + a.Options.DefaultDomain
+		}
 
 		// Normalize the username
 		na := utils.RemoveDots(utils.NormalizeAddress(input.Address))
@@ -62,6 +70,35 @@ func (a *API) createToken(c *gin.Context) {
 			dp, err = hex.DecodeString(input.Password)
 			if err != nil {
 				errors = append(errors, "Invalid password format.")
+			}
+		}
+		if input.ExpiryTime == 0 {
+			input.ExpiryTime = 86400 // 24 hours
+		} else if input.ExpiryTime < 0 {
+			errors = append(errors, "Invalid expiry time.")
+		}
+		if input.ClientID == "" {
+			errors = append(errors, "Missing client ID.")
+		} else {
+			cursor, err := r.Table("applications").Get(input.ClientID).Ne(nil).Run(a.Rethink)
+			if err != nil {
+				c.JSON(500, &gin.H{
+					"code":    0,
+					"message": err.Error(),
+				})
+				return
+			}
+			defer cursor.Close()
+			var appExists bool
+			if err := cursor.One(&appExists); err != nil {
+				c.JSON(500, &gin.H{
+					"code":    0,
+					"message": err.Error(),
+				})
+				return
+			}
+			if !appExists {
+				errors = append(errors, "Invalid client ID.")
 			}
 		}
 		if len(errors) > 0 {
@@ -128,6 +165,33 @@ func (a *API) createToken(c *gin.Context) {
 		}
 
 		// Create a new token
+		token := &models.Token{
+			ID:           uniuri.NewLen(uniuri.UUIDLen),
+			DateCreated:  time.Now(),
+			DateModified: time.Now(),
+			Owner:        result.Account.ID,
+			ExpiryDate:   time.Now().Add(time.Duration(input.ExpiryTime) * time.Second),
+			Type:         "auth",
+			Scope:        []string{"password_grant"},
+			ClientID:     input.ClientID,
+		}
+
+		if result.Account.Subscription == "admin" {
+			token.Scope = append(token.Scope, "admin")
+		}
+
+		// Insert it into database
+		if err := r.Table("tokens").Insert(token).Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Write the token into the response
+		c.JSON(201, token)
+		return
 	case "client_credentials":
 		// Parameters:
 		//  - client_id     - id of the application

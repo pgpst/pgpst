@@ -45,6 +45,7 @@ import (
 //   :delete
 
 var Scopes = map[string]struct{}{
+	"password_grant":      {},
 	"admin":               {},
 	"account":             {},
 	"account:read":        {},
@@ -97,6 +98,10 @@ func InScope(scope []string, what []string) bool {
 	// Check the scope contents
 	for _, x := range what {
 		found := false
+
+		if _, ok := hm["password_grant"]; x != "admin" && ok {
+			return true
+		}
 
 		if _, ok := hm[x]; ok {
 			found = true

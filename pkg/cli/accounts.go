@@ -124,9 +124,16 @@ func accountsAdd(c *cli.Context) int {
 	}
 
 	// If the password isn't 64 characters long, then hash it.
+	var password []byte
 	if len(input.Password) != 64 {
 		hash := sha256.Sum256([]byte(input.Password))
-		input.Password = hex.EncodeToString(hash[:])
+		password = hash[:]
+	} else {
+		password, err = hex.DecodeString(input.Password)
+		if err != nil {
+			writeError(c, err)
+			return 1
+		}
 	}
 
 	// Subscription has to be beta or admin
@@ -157,7 +164,7 @@ func accountsAdd(c *cli.Context) int {
 		AltEmail:     input.AltEmail,
 		Status:       input.Status,
 	}
-	if err := account.SetPassword([]byte(input.Password)); err != nil {
+	if err := account.SetPassword([]byte(password)); err != nil {
 		writeError(c, err)
 		return 1
 	}

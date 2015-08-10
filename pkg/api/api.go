@@ -80,7 +80,7 @@ func (a *API) Main() {
 	{
 		// Public routes
 		v1.POST("/accounts", a.createAccount) // Registration and reservation
-		v1.POST("/token", a.createToken)      // Various OAuth handlers
+		v1.POST("/tokens", a.createToken)     // Various OAuth handlers
 		//v1.GET("/keys/:id", a.readKey)        // Open keyserver
 
 		// Create a subrouter

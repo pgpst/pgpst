@@ -1,18 +1,15 @@
 package api
 
 import (
-	"time"
-
-	"github.com/pgpst/pgpst/internal/github.com/namsral/flag"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
+	"github.com/pgpst/pgpst/internal/github.com/namsral/flag"
 )
 
 type Options struct {
 	LogLevel logrus.Level
 
-	HTTPAddress         string
-	SessionDuration     time.Duration
-	SessionDurationLong time.Duration
+	DefaultDomain string
+	HTTPAddress   string
 
 	RethinkDBAddress  string
 	RethinkDBDatabase string
@@ -44,11 +41,8 @@ func NewOptions(fs *flag.FlagSet) *Options {
 	return &Options{
 		LogLevel: ll,
 
-		HTTPAddress: fs.Lookup("http_address").Value.String(),
-		SessionDuration: time.Duration(
-			fs.Lookup("session_duration").Value.(flag.Getter).Get().(int)) * time.Hour,
-		SessionDurationLong: time.Duration(
-			fs.Lookup("session_duration_long").Value.(flag.Getter).Get().(int)) * time.Hour,
+		DefaultDomain: fs.Lookup("default_domain").Value.String(),
+		HTTPAddress:   fs.Lookup("http_address").Value.String(),
 
 		RethinkDBAddress:  fs.Lookup("rethinkdb_address").Value.String(),
 		RethinkDBDatabase: fs.Lookup("rethinkdb_database").Value.String(),
