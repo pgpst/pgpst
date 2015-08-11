@@ -40,11 +40,13 @@ import (
 //   :delete
 // - tokens
 //   :read
+//   :oauth
 //   :logout
 //   :modify
 //   :delete
 
 var Scopes = map[string]struct{}{
+	"password_grant":      {},
 	"admin":               {},
 	"account":             {},
 	"account:read":        {},
@@ -82,6 +84,7 @@ var Scopes = map[string]struct{}{
 	"threads:delete":      {},
 	"tokens":              {},
 	"tokens:read":         {},
+	"tokens:oauth":        {},
 	"tokens:logout":       {},
 	"tokens:modify":       {},
 	"tokens:delete":       {},
@@ -97,6 +100,10 @@ func InScope(scope []string, what []string) bool {
 	// Check the scope contents
 	for _, x := range what {
 		found := false
+
+		if _, ok := hm["password_grant"]; x != "admin" && ok {
+			return true
+		}
 
 		if _, ok := hm[x]; ok {
 			found = true

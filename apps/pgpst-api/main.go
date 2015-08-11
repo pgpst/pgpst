@@ -21,9 +21,8 @@ func apiFlagSet() *flag.FlagSet {
 	fs.String("log_level", "info", "lowest level of log messages to print")
 
 	// App settings
+	fs.String("default_domain", "pgp.st", "Default email domain")
 	fs.String("http_address", "0.0.0.0:8000", "Address of the HTTP server")
-	fs.Int("session_duration", 72, "Duration of the default session")
-	fs.Int("session_duration_long", 744, "Duration of the session with the Remember Me option")
 
 	// RethinkDB connection
 	fs.String("rethinkdb_address", "127.0.0.1:28015", "Address to the RethinkDB server")

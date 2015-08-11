@@ -1,28 +1,36 @@
 package api
 
 import (
-	"encoding/hex"
 	"time"
 
-	//"github.com/dchest/uniuri"
-	"github.com/pgpst/pgpst/internal/github.com/asaskevich/govalidator"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
+	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
 
 	"github.com/pgpst/pgpst/pkg/models"
-	"github.com/pgpst/pgpst/pkg/utils"
 )
 
 func (a *API) createToken(c *gin.Context) {
+	// Get token and account info from the context
+	var (
+		account      = c.MustGet("account").(*models.Account)
+		currentToken = c.MustGet("token").(*models.Token)
+	)
+
+	if !models.InScope(currentToken.Scope, []string{"tokens:oauth"}) {
+		c.JSON(403, &gin.H{
+			"code":  0,
+			"error": "Your token has insufficient scope",
+		})
+		return
+	}
+
 	// Decode the input
 	var input struct {
-		GrantType    string `json:"grant_type"`
-		Code         string `json:"code"`
-		RedirectURI  string `json:"redirect_uri"`
-		ClientID     string `json:"client_id"`
-		ClientSecret string `json:"client_secret"`
-		Address      string `json:"username"`
-		Password     string `json:"password"`
+		Type       string   `json:"type"`
+		ClientID   string   `json:"client_id"`
+		Scope      []string `json:"scope"`
+		ExpiryTime int64    `json:"expiry_time"`
 	}
 	if err := c.Bind(&input); err != nil {
 		c.JSON(422, &gin.H{
@@ -32,54 +40,43 @@ func (a *API) createToken(c *gin.Context) {
 		return
 	}
 
-	// Switch the action
-	switch input.GrantType {
-	case "authorization_code":
-		// Parameters:
-		//  - code          - authorization code from the app
-		//  - redirect_uri  - url used for the redirect, must be same
-		//  - client_id     - id of the client app
-		//  - client_secret - secret of the client app
-	case "password":
-		// Parameters:
-		//  - username  - account's username
-		//  - password  - sha256 of the account's password
-		//  - client_id - id of the client app used for stats
+	// Run the validation
+	errors := []string{}
 
-		// Normalize the username
-		na := utils.RemoveDots(utils.NormalizeAddress(input.Address))
+	// Type has to be code
+	if input.Type != "code" {
+		errors = append(errors, "Only \"code\" token can be created using this endpoint.")
+	}
 
-		// Validate input
-		errors := []string{}
-		if !govalidator.IsEmail(na) {
-			errors = append(errors, "Invalid address format.")
-		}
-		var dp []byte
-		if len(input.Password) != 64 {
-			errors = append(errors, "Invalid password length.")
+	// Scope must contain proper scopes
+	sm := map[string]struct{}{}
+	for _, scope := range input.Scope {
+		if _, ok := models.Scopes[scope]; !ok {
+			errors = append(errors, "Scope \""+scope+"\" does not exist.")
 		} else {
-			var err error
-			dp, err = hex.DecodeString(input.Password)
-			if err != nil {
-				errors = append(errors, "Invalid password format.")
-			}
+			sm[scope] = struct{}{}
 		}
-		if len(errors) > 0 {
-			c.JSON(422, &gin.H{
-				"code":    0,
-				"message": "Validation failed.",
-				"errors":  errors,
-			})
-			return
-		}
+	}
+	if _, ok := sm["password_grant"]; ok {
+		errors = append(errors, "You can not request the password grant scope.")
+	}
+	if _, ok := sm["admin"]; ok && account.Subscription != "admin" {
+		errors = append(errors, "You can not request the admin scope.")
+	}
 
-		// Fetch the address from the database
-		cursor, err := r.Table("addresses").Get(na).Do(func(address r.Term) map[string]interface{} {
-			return map[string]interface{}{
-				"address": address,
-				"account": r.Table("accounts").Get(address.Field("owner")),
-			}
-		}).Run(a.Rethink)
+	// Expiry time must be valid
+	if input.ExpiryTime == 0 {
+		input.ExpiryTime = 86400
+	} else if input.ExpiryTime < 0 {
+		errors = append(errors, "Invalid expiry time.")
+	}
+
+	// Client ID has to be an application ID
+	var application *models.Application
+	if input.ClientID == "" {
+		errors = append(errors, "Client ID is missing.")
+	} else {
+		cursor, err := r.Table("applications").Get(input.ClientID).Default(map[string]interface{}{}).Run(a.Rethink)
 		if err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,
@@ -88,11 +85,7 @@ func (a *API) createToken(c *gin.Context) {
 			return
 		}
 		defer cursor.Close()
-		var result struct {
-			Address *models.Address `gorethink:"address"`
-			Account *models.Account `gorethink:"account"`
-		}
-		if err := cursor.One(&result); err != nil {
+		if err := cursor.One(&application); err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,
 				"message": err.Error(),
@@ -100,45 +93,43 @@ func (a *API) createToken(c *gin.Context) {
 			return
 		}
 
-		// Verify the password
-		valid, update, err := result.Account.VerifyPassword(dp)
-		if err != nil {
-			c.JSON(401, &gin.H{
-				"code":    0,
-				"message": err.Error(),
-			})
-			return
+		if application.ID == "" {
+			errors = append(errors, "There is no such application.")
 		}
-		if update {
-			result.Account.DateModified = time.Now()
-			if err := r.Table("accounts").Get(result.Account.ID).Update(result.Account).Exec(a.Rethink); err != nil {
-				c.JSON(500, &gin.H{
-					"code":    0,
-					"message": err.Error(),
-				})
-				return
-			}
-		}
-		if !valid {
-			c.JSON(401, &gin.H{
-				"code":    0,
-				"message": "Invalid password",
-			})
-			return
-		}
-
-		// Create a new token
-	case "client_credentials":
-		// Parameters:
-		//  - client_id     - id of the application
-		//  - client_secret - secret of the application
 	}
 
-	// Same as default in the switch
-	c.JSON(422, &gin.H{
-		"code":    0,
-		"message": "Validation failed",
-		"errors":  []string{"Invalid action"},
-	})
+	// Abort the request if there are errors
+	if len(errors) > 0 {
+		c.JSON(422, &gin.H{
+			"code":    0,
+			"message": "Validation failed.",
+			"errors":  errors,
+		})
+		return
+	}
+
+	// Create a new token
+	token := &models.Token{
+		ID:           uniuri.NewLen(uniuri.UUIDLen),
+		DateCreated:  time.Now(),
+		DateModified: time.Now(),
+		Owner:        account.ID,
+		ExpiryDate:   time.Now().Add(time.Duration(input.ExpiryTime) * time.Second),
+		Type:         "code",
+		Scope:        input.Scope,
+		ClientID:     input.ClientID,
+	}
+
+	// Insert it into database
+	if err := r.Table("tokens").Insert(token).Exec(a.Rethink); err != nil {
+		c.JSON(500, &gin.H{
+			"code":    0,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Write the token into the response
+	c.JSON(201, token)
 	return
 }

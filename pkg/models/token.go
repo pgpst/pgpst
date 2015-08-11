@@ -11,7 +11,7 @@ type Token struct {
 	Owner        string    `json:"owner" gorethink:"owner"`                                     // Owner of the email
 	ExpiryDate   time.Time `json:"expiry_date,omitempty" gorethink:"expiry_date,omitempty"`
 
-	Type     string   `json:"type" gorethink:"type"`
+	Type     string   `json:"type" gorethink:"type"` // auth/activate/code
 	Scope    []string `json:"scope,omitempty" gorethink:"scope,omitempty"`
 	ClientID string   `json:"client_id,omitempty" gorethink:"client_id,omitempty"`
 }
