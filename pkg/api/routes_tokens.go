@@ -44,7 +44,7 @@ func (a *API) createToken(c *gin.Context) {
 	errors := []string{}
 
 	// Type has to be code
-	if input.Type != "code" {
+	if input.Type != "code" && input.Type != "auth" {
 		errors = append(errors, "Only \"code\" token can be created using this endpoint.")
 	}
 
@@ -115,7 +115,7 @@ func (a *API) createToken(c *gin.Context) {
 		DateModified: time.Now(),
 		Owner:        account.ID,
 		ExpiryDate:   time.Now().Add(time.Duration(input.ExpiryTime) * time.Second),
-		Type:         "code",
+		Type:         input.Type,
 		Scope:        input.Scope,
 		ClientID:     input.ClientID,
 	}

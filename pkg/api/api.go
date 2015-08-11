@@ -70,6 +70,7 @@ func (a *API) Main() {
 	router := gin.New()
 
 	// Add two global middlewares
+	router.Use(utils.GinCORS())
 	router.Use(utils.GinLogger("API", a.Log))
 	router.Use(utils.GinRecovery(a.Raven))
 
