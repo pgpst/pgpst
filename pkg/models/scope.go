@@ -40,6 +40,7 @@ import (
 //   :delete
 // - tokens
 //   :read
+//   :oauth
 //   :logout
 //   :modify
 //   :delete
@@ -83,6 +84,7 @@ var Scopes = map[string]struct{}{
 	"threads:delete":      {},
 	"tokens":              {},
 	"tokens:read":         {},
+	"tokens:oauth":        {},
 	"tokens:logout":       {},
 	"tokens:modify":       {},
 	"tokens:delete":       {},

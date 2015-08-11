@@ -52,7 +52,7 @@ func tokensAdd(c *cli.Context) int {
 		}
 		input.Owner = strings.TrimSpace(input.Owner)
 
-		fmt.Fprint(c.App.Writer, "Type [auth/activate]: ")
+		fmt.Fprint(c.App.Writer, "Type [auth/activate/code]: ")
 		input.Type, err = rd.ReadString('\n')
 		if err != nil {
 			writeError(c, err)
@@ -75,7 +75,7 @@ func tokensAdd(c *cli.Context) int {
 			}
 		}
 
-		if input.Type == "auth" {
+		if input.Type == "auth" || input.Type == "code" {
 			fmt.Fprint(c.App.Writer, "Client ID: ")
 			input.ClientID, err = rd.ReadString('\n')
 			if err != nil {
@@ -98,7 +98,7 @@ func tokensAdd(c *cli.Context) int {
 	// Validate the input
 
 	// Type has to be either auth or activate
-	if input.Type != "auth" && input.Type != "activate" {
+	if input.Type != "auth" && input.Type != "activate" && input.Type != "code" {
 		writeError(c, fmt.Errorf("Token type must be either auth or activate. Got %s.", input.Type))
 		return 1
 	}
