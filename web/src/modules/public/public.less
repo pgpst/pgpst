@@ -1,0 +1,116 @@
+@import "../../variables.less";
+
+.Public {
+	.main {
+		min-height: 100vh;
+		padding-top: 75px;
+		padding-bottom: 64px;
+		clear: both;
+	}
+
+	.header {
+		position: fixed;
+		top: 0px;
+		left: 0px;
+		right: 0px;
+		z-index: 9999;
+
+		background: @dark-base;
+		color: lighten(@dark-base, 60%);
+		font-size: 1.15em;
+		height: 75px;
+
+		.brand {
+			float: left;
+
+			line-height: 75px;
+			font-size: 1.5em;
+			font-family: "Slabo 13px", sans-serif;
+		
+			em {
+				font-style: normal;
+				color: lighten(@dark-base, 40%);
+			}
+		}
+
+		.navigation {
+			float: right;
+
+			line-height: 75px;
+
+			a, span {
+				display: block;
+				float: left;
+			}
+
+			a {
+				color: lighten(@dark-base, 60%);
+				transition: color 0.25s;
+
+				height: 75px;
+				margin-left: 17px;
+
+				&:link {
+					text-decoration: none;
+				}
+
+				&.active, &:hover {
+					color: lighten(@dark-base, 80%);
+					text-decoration: none;
+				}
+
+				&.active:hover {
+					color: lighten(@dark-base, 90%);
+				}
+			}
+
+			.seperator {
+				margin-left: 17px;
+				font-size: 0.9em;
+				color: lighten(@dark-base, 30%);
+			}
+
+			.split {
+				margin-left: 12px;
+				margin-right: -5px;
+				font-size: 0.9em;
+				color: lighten(@dark-base, 30%);
+			}
+		}
+	}
+
+	.footer {
+		position: relative;
+		margin-top: -64px;
+		height: 64px;
+		line-height: 64px;
+
+		background: @dark-base;
+		color: lighten(@dark-base, 60%);
+		font-size: 1.15em;
+
+		a {
+			color: lighten(@dark-base, 60%);
+
+			&:hover {
+				color: lighten(@dark-base, 70%);
+				text-decoration: none;
+			}
+		}
+
+		.left {
+			float: left;
+		}
+
+		.right {
+			float: right;
+
+			.seperator {
+				margin-left: 10px;
+				margin-right: 10px;
+				font-size: 0.9em;
+				color: lighten(@dark-base, 30%);
+			}
+		}
+	}
+}

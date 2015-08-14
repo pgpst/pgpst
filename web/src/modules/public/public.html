@@ -1,0 +1,35 @@
+<div class="Public">
+	<div class="header">
+		<div class="container">
+			<div class="brand">
+				pgp.st <em>secure email<span class="hidden-xs hidden-sm"> service</span></em>
+			</div>
+
+			<div class="navigation">
+				<a id="reserve-menu" du-smooth-scroll du-scrollspy href="/#reserve">Reserve</a>
+				<a id="features-menu" du-smooth-scroll du-scrollspy href="/#features">Features</a>
+				<a id="pricing-menu" du-smooth-scroll du-scrollspy href="/#pricing">Pricing</a>
+				<a id="roadmap-menu" du-smooth-scroll du-scrollspy href="/#roadmap">Roadmap</a>
+				<span class="seperator">|</span>
+				<a ng-class="{ active: public.isActive('/login')}" ui-sref="public.login">Sign in</a>
+				<span class="split">or</span>
+				<a ng-class="{ active: public.isActive('/register')}" ui-sref="public.register">Register</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="main" ui-view></div>
+
+	<div class="footer">
+		<div class="container">
+			<div class="left">
+				&copy; 2015 <a href="#">zduniak.net</a>
+			</div>
+			<div class="right">
+				<a href="mailto:hello@pgp.st">hello@pgp.st</a>
+				<span class="seperator">|</span>
+				<a href="mailto:media@pgp.st">media@pgp.st</a>
+			</div>
+		</div>
+	</div>
+</div>

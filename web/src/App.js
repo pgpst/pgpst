@@ -1,21 +1,28 @@
-import React, { PropTypes } from "react";
-import Explore from "./components/Explore";
-import DocumentTitle from "react-document-title";
+/* Load vendor libraries */
+import angular  from "angular";
+import "angular-ui-router";
+import "angular-scroll";
 
-export default class App {
-	static propTypes = {
-		children: PropTypes.object
-	};
+/* Load the application */
 
-	render() {
-		return (
-			<DocumentTitle title="pgp.st">
-				<div className="App">
-					<Explore {...this.props} />
-					<hr />
-					{this.props.children}
-				</div>
-			</DocumentTitle>
-		);
-	}
-}
+// Global CSS rules
+import "./app.less";
+
+// Modules
+//import clientApp from "./modules/client";
+import publicApp from "./modules/public";
+
+angular.module("pgpst.app", [
+	// vendor 
+	"ui.router",
+	"duScroll",
+
+	// modules
+	//clientApp,
+	publicApp,
+	/*"pgpst.client",
+	"pgpst.public",*/
+]).config(($urlRouterProvider, $locationProvider) => {
+	$urlRouterProvider.otherwise('/');
+	$locationProvider.html5Mode(true);
+});
