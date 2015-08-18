@@ -21,13 +21,13 @@ func (a *API) oauthToken(c *gin.Context) {
 		Code         string `json:"code"`
 		ClientID     string `json:"client_id"`
 		ClientSecret string `json:"client_secret"`
-		Address      string `json:"username"`
+		Address      string `json:"address"`
 		Password     string `json:"password"`
 		ExpiryTime   int64  `json:"expiry_time"`
 	}
 	if err := c.Bind(&input); err != nil {
 		c.JSON(422, &gin.H{
-			"code":    0,
+			"code":    CodeGeneralInvalidInput,
 			"message": err.Error(),
 		})
 		return
@@ -45,7 +45,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		cursor, err := r.Table("applications").Get(input.ClientID).Default(map[string]interface{}{}).Run(a.Rethink)
 		if err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
@@ -54,21 +54,21 @@ func (a *API) oauthToken(c *gin.Context) {
 		var application *models.Application
 		if err := cursor.One(&application); err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
 		}
 		if application.ID == "" {
 			c.JSON(422, &gin.H{
-				"code":    0,
+				"code":    CodeOAuthInvalidApplication,
 				"message": "No such client ID.",
 			})
 			return
 		}
 		if application.Secret != input.ClientSecret {
 			c.JSON(422, &gin.H{
-				"code":    0,
+				"code":    CodeOAuthInvalidSecret,
 				"message": "Invalid client secret.",
 			})
 			return
@@ -78,7 +78,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		cursor, err = r.Table("tokens").Get(input.Code).Default(map[string]interface{}{}).Run(a.Rethink)
 		if err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
@@ -87,7 +87,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		var codeToken *models.Token
 		if err := cursor.One(&codeToken); err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
@@ -96,7 +96,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		// Ensure token type and matching client id
 		if codeToken.ID == "" || codeToken.Type != "code" || codeToken.ClientID != input.ClientID {
 			c.JSON(422, &gin.H{
-				"code":    0,
+				"code":    CodeOAuthInvalidCode,
 				"message": "Invalid code",
 			})
 			return
@@ -117,7 +117,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		// Remove code token
 		if err := r.Table("tokens").Get(codeToken.ID).Delete().Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
@@ -126,7 +126,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		// Insert it into database
 		if err := r.Table("tokens").Insert(token).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
@@ -137,7 +137,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		return
 	case "password":
 		// Parameters:
-		//  - username    - account's username
+		//  - address     - address in the system
 		//  - password    - sha256 of the account's password
 		//  - client_id   - id of the client app used for stats
 		//  - expiry_time - seconds until token expires
@@ -176,7 +176,7 @@ func (a *API) oauthToken(c *gin.Context) {
 			cursor, err := r.Table("applications").Get(input.ClientID).Ne(nil).Run(a.Rethink)
 			if err != nil {
 				c.JSON(500, &gin.H{
-					"code":    0,
+					"code":    CodeGeneralDatabaseError,
 					"message": err.Error(),
 				})
 				return
@@ -185,7 +185,7 @@ func (a *API) oauthToken(c *gin.Context) {
 			var appExists bool
 			if err := cursor.One(&appExists); err != nil {
 				c.JSON(500, &gin.H{
-					"code":    0,
+					"code":    CodeGeneralDatabaseError,
 					"message": err.Error(),
 				})
 				return
@@ -196,7 +196,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		}
 		if len(errors) > 0 {
 			c.JSON(422, &gin.H{
-				"code":    0,
+				"code":    CodeOAuthValidationFailed,
 				"message": "Validation failed.",
 				"errors":  errors,
 			})
@@ -204,15 +204,19 @@ func (a *API) oauthToken(c *gin.Context) {
 		}
 
 		// Fetch the address from the database
-		cursor, err := r.Table("addresses").Get(na).Do(func(address r.Term) map[string]interface{} {
+		cursor, err := r.Table("addresses").Get(na).Default(map[string]interface{}{}).Do(func(address r.Term) map[string]interface{} {
 			return map[string]interface{}{
 				"address": address,
-				"account": r.Table("accounts").Get(address.Field("owner")),
+				"account": r.Branch(
+					address.HasFields("id"),
+					r.Table("accounts").Get(address.Field("owner")),
+					nil,
+				),
 			}
 		}).Run(a.Rethink)
 		if err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
@@ -224,8 +228,17 @@ func (a *API) oauthToken(c *gin.Context) {
 		}
 		if err := cursor.One(&result); err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
+			})
+			return
+		}
+
+		// Verify that both address and account exist
+		if result.Address == nil || result.Address.ID == "" || result.Account == nil || result.Account.ID == "" {
+			c.JSON(401, &gin.H{
+				"code":    CodeOAuthInvalidAddress,
+				"message": "No such address exists",
 			})
 			return
 		}
@@ -233,8 +246,8 @@ func (a *API) oauthToken(c *gin.Context) {
 		// Verify the password
 		valid, update, err := result.Account.VerifyPassword(dp)
 		if err != nil {
-			c.JSON(401, &gin.H{
-				"code":    0,
+			c.JSON(500, &gin.H{
+				"code":    CodeOAuthInvalidPassword,
 				"message": err.Error(),
 			})
 			return
@@ -243,7 +256,7 @@ func (a *API) oauthToken(c *gin.Context) {
 			result.Account.DateModified = time.Now()
 			if err := r.Table("accounts").Get(result.Account.ID).Update(result.Account).Exec(a.Rethink); err != nil {
 				c.JSON(500, &gin.H{
-					"code":    0,
+					"code":    CodeGeneralDatabaseError,
 					"message": err.Error(),
 				})
 				return
@@ -251,7 +264,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		}
 		if !valid {
 			c.JSON(401, &gin.H{
-				"code":    0,
+				"code":    CodeOAuthInvalidPassword,
 				"message": "Invalid password",
 			})
 			return
@@ -276,7 +289,7 @@ func (a *API) oauthToken(c *gin.Context) {
 		// Insert it into database
 		if err := r.Table("tokens").Insert(token).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
-				"code":    0,
+				"code":    CodeGeneralDatabaseError,
 				"message": err.Error(),
 			})
 			return
@@ -291,14 +304,14 @@ func (a *API) oauthToken(c *gin.Context) {
 		//  - client_secret - secret of the application
 
 		c.JSON(501, &gin.H{
-			"code":    0,
+			"code":    CodeGeneralUnimplemented,
 			"message": "Client credentials flow is not implemented.",
 		})
 	}
 
 	// Same as default in the switch
 	c.JSON(422, &gin.H{
-		"code":    0,
+		"code":    CodeGeneralInvalidAction,
 		"message": "Validation failed",
 		"errors":  []string{"Invalid action"},
 	})

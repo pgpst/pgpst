@@ -18,6 +18,14 @@
 		margin-left: -(400px/2);
 		margin-top: -(341px/2)-10px;
 
+		form.ng-valid-parse {
+			.address, .password {
+				&.ng-invalid.ng-dirty {
+					border: 1px solid @red-base;
+				}
+			}
+		}
+
 		h2 {
 			height: 64px;
 			line-height: 64px;

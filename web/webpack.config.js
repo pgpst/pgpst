@@ -27,7 +27,7 @@ export default {
 			{
 				test: /\.js$/,
 				exclude: /(node_modules)/,
-				loader: "babel-loader"
+				loader: "babel?optional[]=runtime"
 			},
 			{
 				test: /\.css$/,
@@ -82,8 +82,27 @@ export default {
 		new htmlWebpackPlugin({
 			template: __dirname + "/src/index.html"
 		}),
+		new extractTextPlugin("[name].css"),
+		new webpack.IgnorePlugin(new RegExp("^(node-localstorage)$")),
+		new webpack.DefinePlugin({
+			"process.env": () => {
+				let result = {};
 
-		new extractTextPlugin("[name].css")
+				for (let key in process.env) {
+					result[key] = JSON.stringify(process.env[key]);
+				}
+
+				return result;
+			}()
+/*
+			Object.keys(process.env).reduce((previous, current) => {
+				if (!previous) {
+					previous = {};
+				}
+
+				previous[current] = JSON.stringify(process.env[current]);
+			})*/
+		})
 	],
 
 	devtool: "eval"

@@ -2,16 +2,16 @@
 	<div class="form">
 		<h2>Sign in</h2>
 
-		<form>
-			<input class="address" type="text" placeholder="your e-mail address">
-			<input class="password" type="password" placeholder="password">
+		<form ng-submit="login.onSubmit()" name="login.form">
+			<input ng-model="login.address" ng-change="login.resetAddressValid()" ng-class="{'ng-invalid':login.invalid.address}" class="address" type="text" name="address" placeholder="your e-mail address" required>
+			<input ng-model="login.password" ng-change="login.resetPasswordValid()" ng-class="{'ng-invalid':login.invalid.password}" class="password" type="password" name="password" placeholder="password" required>
 			<div class="remember">
-				<input type="checkbox" id="remember">
+				<input ng-model="login.remember" type="checkbox" id="remember">
 				<label for="remember">
 					Remember me
 				</label>
 			</div>
-			<button type="submit" class="submit btn btn-primary">Sign in</button>
+			<button ng-disabled="login.form.$invalid" type="submit" class="submit btn btn-primary">Sign in</button>
 		</form>
 	</div>
 </div>
