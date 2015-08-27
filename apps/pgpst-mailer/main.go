@@ -38,6 +38,7 @@ func mailerFlagSet() *flag.FlagSet {
 
 	// Connection parameters
 	fs.String("hostname", "pgp.st", "Hostname of the mailer")
+	fs.String("welcome_message", "Welcome to pgp.st", "Welcome message sent to the clients connecting to the SMTP server")
 	fs.Int("read_timeout", 0, "Connection read timeout in seconds")
 	fs.Int("write_timeout", 0, "Connection write timeout in seconds")
 	fs.Int("data_timeout", 0, "Data read timeout in seconds")
