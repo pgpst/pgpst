@@ -14,7 +14,7 @@ type Key struct {
 	Headers    map[string]string `json:"headers,omitempty" gorethink:"headers,omitempty"`           // headers from the orig data
 	Algorithm  string            `json:"algorithm,omitempty" gorethink:"algorithm,omitempty"`       // algorithm of the key
 	Length     int               `json:"length,omitempty" gorethink:"length,omitempty"`             // key's length
-	Key        []byte            `json:"key,omitempty" gorethink:"key,omitempty"`                   // the actual key
+	Body       []byte            `json:"body,omitempty" gorethink:"body,omitempty"`                 // the actual key
 	KeyID      string            `json:"key_id,omitempty" gorethink:"key_id,omitempty"`             // key_id
 	KeyIDShort string            `json:"key_id_short,omitempty" gorethink:"key_id_short,omitempty"` // shorter version of key_id
 	MasterKey  string            `json:"master_key,omitempty" gorethink:"master_key,omitempty"`     // master key

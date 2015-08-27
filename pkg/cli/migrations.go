@@ -46,7 +46,7 @@ var migrations = []migration{
 	},
 	{
 		Revision: 1,
-		Name:     "create_tables",
+		Name:     "analytic_indexes",
 		Migrate: func(opts *r.ConnectOpts) []r.Term {
 			return []r.Term{
 				r.Table("accounts").IndexCreate("date_created"),
@@ -173,6 +173,33 @@ var migrations = []migration{
 				r.Table("tokens").IndexDrop("expiry_date"),
 				r.Table("tokens").IndexDrop("date_created"),
 				r.Table("tokens").IndexDrop("date_modified"),
+			}
+		},
+	},
+	{
+		Revision: 2,
+		Name:     "mailer indices",
+		Migrate: func(opts *r.ConnectOpts) []r.Term {
+			return []r.Term{
+				r.Table("emails").IndexCreateFunc("messageIDOwner", func(row r.Term) []interface{} {
+					return []interface{}{
+						row.Field("message_id"),
+						row.Field("owner"),
+					}
+				}),
+				r.Table("labels").IndexCreateFunc("nameOwnerSystem", func(row r.Term) []interface{} {
+					return []interface{}{
+						row.Field("name"),
+						row.Field("owner"),
+						row.Field("system"),
+					}
+				}),
+			}
+		},
+		Revert: func(opts *r.ConnectOpts) []r.Term {
+			return []r.Term{
+				r.Table("emails").IndexDrop("messageIDOwner"),
+				r.Table("labels").IndexDrop("nameOwnerSystem"),
 			}
 		},
 	},

@@ -9,6 +9,7 @@ import (
 	"github.com/pgpst/pgpst/internal/github.com/namsral/flag"
 
 	"github.com/pgpst/pgpst/pkg/mailer"
+	"github.com/pgpst/pgpst/pkg/version"
 )
 
 func mailerFlagSet() *flag.FlagSet {
@@ -70,8 +71,15 @@ func main() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM)
 
+	// Parse options
+	options, err := mailer.NewOptions(fs)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	// Create a new mailer
-	mailer := mailer.NewMailer(mailer.NewOptions(fs))
+	mailer := mailer.NewMailer(options)
 
 	// Spawn it in a new goroutine
 	go mailer.Main()

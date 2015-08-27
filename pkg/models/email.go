@@ -10,16 +10,15 @@ type Email struct {
 	DateModified time.Time `json:"date_modified,omitempty" gorethink:"date_modified,omitempty"` // time of last mod
 	Owner        string    `json:"owner" gorethink:"owner"`                                     // Owner of the email
 
-	From string   `json:"from" gorethink:"from"`                   // who sent it
+	MessageID string `json:"message_id" gorethink:"message_id"`
+	/*From string   `json:"from" gorethink:"from"`                   // who sent it
 	To   []string `json:"to" gorethink:"to"`                       // who's the recipient
 	CC   []string `json:"cc,omitempty" gorethink:"cc,omitempty"`   // carbon copy
-	BCC  []string `json:"bcc,omitempty" gorethink:"bcc,omitempty"` // blind carbon copy
-
-	Manifest []byte   `json:"manifest,omitempty" gorethink:"manifest,omitempty"` // manifest body
-	Files    []string `json:"files,omitempty" gorethink:"files,omitempty"`       // resource ids
-	Body     []byte   `json:"body,omitempty" gorethink:"body,omitempty"`         // main body parts
+	BCC  []string `json:"bcc,omitempty" gorethink:"bcc,omitempty"` // blind carbon copy*/
 
 	Thread string `json:"thread" gorethink:"thread"` // thread id
 	Status string `json:"status" gorethink:"status"` // status - received, sent or sending
-	Secure bool   `json:"secure" gorethink:"secure"` // encrypted true/false
+
+	Manifest []byte `json:"manifest" gorethink:"manifest"` // Description of the body including keys
+	Body     []byte `json:"body" gorethink:"body"`         // Email's body encrypted using AES256-CTR
 }

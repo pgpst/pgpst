@@ -2,8 +2,10 @@ package mailer
 
 import (
 	"crypto/tls"
+	"io/ioutil"
+	"time"
 
-	"github.com/hashicorp/lru"
+	//"github.com/hashicorp/golang-lru"
 	"github.com/lavab/go-spamc"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
 	"github.com/pgpst/pgpst/internal/github.com/bitly/go-nsq"
@@ -32,7 +34,7 @@ func NewMailer(options *Options) *Mailer {
 	log.Level = options.LogLevel
 
 	// Connect to the database
-	session, err := r.Connect(options.RethinkConnectOpts)
+	session, err := r.Connect(options.RethinkOpts)
 	if err != nil {
 		log.WithField("err", err).Fatal("Unable to connect to RethinkDB")
 	}
@@ -61,7 +63,7 @@ func NewMailer(options *Options) *Mailer {
 		log.WithField("err", err).Fatal("Unable to create a new NSQ consumer")
 	}
 	consumer.SetLogger(nsqlog, nsq.LogLevelWarning)
-	consumer.AddConcurrentHandlers(mailer, options.SenderConcurrency)
+	//consumer.AddConcurrentHandlers(mailer, options.SenderConcurrency)
 	mailer.Consumer = consumer
 
 	// Connect to spamd
@@ -132,10 +134,10 @@ func (m *Mailer) Main() {
 
 	// Listen
 	if err := smtp.ListenAndServe(m.Options.SMTPAddress); err != nil {
-		log.WithField("err", err).Fatal("Unable to listen and serve the SMTP server")
+		m.Log.WithField("err", err).Fatal("Unable to listen and serve the SMTP server")
 	}
 }
 
-func (a *API) Exit() {
+func (m *Mailer) Exit() {
 
 }
