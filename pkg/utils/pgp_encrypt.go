@@ -3,8 +3,8 @@ package utils
 import (
 	"bytes"
 
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/armor"
+	"github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp"
+	"github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp/armor"
 )
 
 func PGPEncrypt(data []byte, to []*openpgp.Entity) ([]byte, error) {

@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lavab/go-spamc"
+	"github.com/pgpst/pgpst/internal/github.com/lavab/go-spamc"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
-	"github.com/pgpst/smtpd"
-	"golang.org/x/crypto/openpgp"
+	"github.com/pgpst/pgpst/internal/github.com/pgpst/smtpd"
+	"github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp"
 
 	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"

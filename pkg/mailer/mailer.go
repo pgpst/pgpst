@@ -6,12 +6,12 @@ import (
 	"time"
 
 	//"github.com/hashicorp/golang-lru"
-	"github.com/lavab/go-spamc"
+	"github.com/pgpst/pgpst/internal/github.com/lavab/go-spamc"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
 	"github.com/pgpst/pgpst/internal/github.com/bitly/go-nsq"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/getsentry/raven-go"
-	"github.com/pgpst/smtpd"
+	"github.com/pgpst/pgpst/internal/github.com/pgpst/smtpd"
 
 	"github.com/pgpst/pgpst/pkg/utils"
 )
