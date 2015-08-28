@@ -68,8 +68,8 @@
 			"canonical": "github.com/codegangsta/cli",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/codegangsta/cli",
-			"revision": "bca61c476e3c752594983e4c9bcd5f62fb09f157",
-			"revisionTime": "2015-07-11T14:54:04-07:00"
+			"revision": "142e6cd241a4dfbf7f07a018f1f8225180018da4",
+			"revisionTime": "2015-08-11T21:22:59-07:00"
 		},
 		{
 			"canonical": "github.com/dancannon/gorethink",
@@ -163,6 +163,13 @@
 			"revisionTime": "2014-11-03T11:57:36-07:00"
 		},
 		{
+			"canonical": "github.com/lavab/go-spamc",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/lavab/go-spamc",
+			"revision": "d35ed698c3bceb108b3e59ec5770e1b98605ef5f",
+			"revisionTime": "2015-05-09T14:09:43+02:00"
+		},
+		{
 			"canonical": "github.com/manucorporat/sse",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/manucorporat/sse",
@@ -203,6 +210,13 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/olekukonko/ts",
 			"revision": "ecf753e7c962639ab5a1fb46f7da627d4c0a04b8",
 			"revisionTime": "2014-04-12T15:01:45-07:00"
+		},
+		{
+			"canonical": "github.com/pgpst/smtpd",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/pgpst/smtpd",
+			"revision": "ee137c0d7537fca012f11a5fe9262b772bc66829",
+			"revisionTime": "2015-08-28T13:40:15+02:00"
 		},
 		{
 			"canonical": "github.com/pzduniak/cli",
@@ -343,6 +357,62 @@
 			"local": "github.com/pgpst/pgpst/internal/github.com/stretchr/testify/assert",
 			"revision": "8ce79b9f0b77745113f82c17d0756771456ccbd3",
 			"revisionTime": "2014-11-18T15:38:11-08:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/cast5",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/cast5",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/openpgp",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/openpgp/armor",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp/armor",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/openpgp/elgamal",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp/elgamal",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/openpgp/errors",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp/errors",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/openpgp/packet",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp/packet",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/openpgp/s2k",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp/s2k",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/ripemd160",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/ripemd160",
+			"revision": "8fec09c61d5d",
+			"revisionTime": "2014-11-10T08:50:25+11:00"
 		},
 		{
 			"canonical": "golang.org/x/net/context",
