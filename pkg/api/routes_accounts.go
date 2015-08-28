@@ -241,9 +241,52 @@ func (a *API) createAccount(c *gin.Context) {
 			return
 		}
 
-		// and make the account active, welcome to pgp.st, new guy!
+		// make the account active, welcome to pgp.st, new guy!
 		if err := r.Table("accounts").Get(result.Account.ID).Update(map[string]interface{}{
-			"status": "active",
+			"status":        "active",
+			"date_modified": time.Now(),
+		}).Exec(a.Rethink); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Create labels for that user
+		if err := r.Table("labels").Insert([]*models.Label{
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        result.Account.ID,
+				Name:         "Inbox",
+				System:       true,
+			},
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        result.Account.ID,
+				Name:         "Spam",
+				System:       true,
+			},
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        result.Account.ID,
+				Name:         "Sent",
+				System:       true,
+			},
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        result.Account.ID,
+				Name:         "Starred",
+				System:       true,
+			},
 		}).Exec(a.Rethink); err != nil {
 			c.JSON(500, &gin.H{
 				"code":    0,

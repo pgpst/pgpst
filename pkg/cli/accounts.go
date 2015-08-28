@@ -178,6 +178,44 @@ func accountsAdd(c *cli.Context) int {
 		Owner:        account.ID,
 	}
 
+	var labels []*models.Label
+	if account.Status != "inactive" {
+		labels = []*models.Label{
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        account.ID,
+				Name:         "Inbox",
+				System:       true,
+			},
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        account.ID,
+				Name:         "Spam",
+				System:       true,
+			},
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        account.ID,
+				Name:         "Sent",
+				System:       true,
+			},
+			&models.Label{
+				ID:           uniuri.NewLen(uniuri.UUIDLen),
+				DateCreated:  time.Now(),
+				DateModified: time.Now(),
+				Owner:        account.ID,
+				Name:         "Starred",
+				System:       true,
+			},
+		}
+	}
+
 	// Insert them into database
 	if !c.Bool("dry") {
 		if err := r.Table("addresses").Insert(address).Exec(session); err != nil {
@@ -187,6 +225,12 @@ func accountsAdd(c *cli.Context) int {
 		if err := r.Table("accounts").Insert(account).Exec(session); err != nil {
 			writeError(c, err)
 			return 1
+		}
+		if labels != nil {
+			if err := r.Table("labels").Insert(labels).Exec(session); err != nil {
+				writeError(c, err)
+				return 1
+			}
 		}
 	}
 
