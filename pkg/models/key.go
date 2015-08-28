@@ -33,11 +33,11 @@ type Signature struct {
 	Hash         uint      `json:"hash" gorethink:"hash"`
 	CreationTime time.Time `json:"creation_time" gorethink:"creation_time"`
 
-	SigLifetimeSecs uint32 `json:"sig_lifetime_secs,omitempty" gorethink:"sig_lifetime_secs,omitempty"`
-	KeyLifetimeSecs uint32 `json:"key_lifetime_secs,omitempty" gorethink:"key_lifetime_secs,omitempty"`
-	IssuerKeyID     uint64 `json:"issuer_key_id,omitempty" gorethink:"issuer_key_id,omitempty"`
-	IsPrimaryID     bool   `json:"is_primary_id,omitempty" gorethink:"is_primary_id,omitempty"`
+	SigLifetimeSecs *uint32 `json:"sig_lifetime_secs,omitempty" gorethink:"sig_lifetime_secs,omitempty"`
+	KeyLifetimeSecs *uint32 `json:"key_lifetime_secs,omitempty" gorethink:"key_lifetime_secs,omitempty"`
+	IssuerKeyID     *uint64 `json:"issuer_key_id,omitempty" gorethink:"issuer_key_id,omitempty"`
+	IsPrimaryID     *bool   `json:"is_primary_id,omitempty" gorethink:"is_primary_id,omitempty"`
 
-	RevocationReason     uint8  `json:"revocation_reason,omitempty" gorethink:"revocation_reason,omitempty"`
+	RevocationReason     *uint8 `json:"revocation_reason,omitempty" gorethink:"revocation_reason,omitempty"`
 	RevocationReasonText string `json:"revocation_reason_text,omitempty" gorethink:"revocation_reason_text,omitempty"`
 }

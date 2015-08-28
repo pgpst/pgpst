@@ -107,7 +107,7 @@ func (a *API) Main() {
 			//v1a.DELETE("/emails/:id", a.deleteEmail)
 
 			// Keys
-			//v1a.POST("/keys", a.createKeys)
+			v1a.POST("/keys", a.createKey)
 			//v1a.GET("/keys", a.listKeys)
 			//v1a.PUT("/keys/:id", a.updateKeys)
 			//v1a.DELETE("/keys/:id", a.deleteKey)

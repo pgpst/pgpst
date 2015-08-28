@@ -68,8 +68,6 @@ var Scopes = map[string]struct{}{
 	"emails:delete":       {},
 	"keys":                {},
 	"keys:read":           {},
-	"keys:modify":         {},
-	"keys:delete":         {},
 	"labels":              {},
 	"labels:read":         {},
 	"labels:modify":       {},
