@@ -79,13 +79,13 @@ func (m *Mailer) HandleRecipient(next func(conn *smtpd.Connection)) func(conn *s
 				),
 				"key": r.Branch(
 					address.HasFields("public_key").And(address.Field("public_key").Ne("")),
-					r.Table("keys").Get(address.Field("public_key")),
+					r.Table("keys").Get(address.Field("public_key")).Without("identities"),
 					r.Branch(
 						address.HasFields("id"),
 						r.Table("keys").GetAllByIndex("owner", address.Field("owner")).OrderBy("date_created").CoerceTo("array").Do(func(keys r.Term) r.Term {
 							return r.Branch(
 								keys.Count().Gt(0),
-								keys.Nth(-1),
+								keys.Nth(-1).Without("identities"),
 								nil,
 							)
 						}),

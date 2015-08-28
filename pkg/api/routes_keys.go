@@ -7,7 +7,7 @@ import (
 
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/gin-gonic/gin"
-	"golang.org/x/crypto/openpgp"
+	"github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp"
 
 	"github.com/pgpst/pgpst/pkg/models"
 )
