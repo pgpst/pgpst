@@ -203,4 +203,22 @@ var migrations = []migration{
 			}
 		},
 	},
+	{
+		Revision: 3,
+		Name:     "key rework",
+		Migrate: func(opts *r.ConnectOpts) []r.Term {
+			return []r.Term{
+				r.Table("keys").IndexDrop("key_id_short"),
+				r.Table("keys").IndexCreate("key_id_string"),
+				r.Table("keys").IndexCreate("key_id_short_string"),
+			}
+		},
+		Revert: func(opts *r.ConnectOpts) []r.Term {
+			return []r.Term{
+				r.Table("keys").IndexCreate("key_id_short"),
+				r.Table("keys").IndexDrop("key_id_string"),
+				r.Table("keys").IndexDrop("key_id_short_string"),
+			}
+		},
+	},
 }

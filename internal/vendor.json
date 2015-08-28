@@ -215,8 +215,8 @@
 			"canonical": "github.com/pgpst/smtpd",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/pgpst/smtpd",
-			"revision": "ee5e54e4a06ab19dedae3c7e8af3156725ef77ba",
-			"revisionTime": "2015-08-27T21:13:42+02:00"
+			"revision": "ee137c0d7537fca012f11a5fe9262b772bc66829",
+			"revisionTime": "2015-08-28T13:40:15+02:00"
 		},
 		{
 			"canonical": "github.com/pzduniak/cli",

@@ -11,8 +11,5 @@ type Label struct {
 	Owner        string    `json:"owner" gorethink:"owner"`                                     // Owner of the email
 
 	Name   string `json:"name" gorethink:"name"`
-	System bool   `json:"is_system" gorethink:"is_system"`
-
-	UnreadThreads int `json:"unread_threads" gorethink:"unread_threads,omitempty"`
-	TotalThreads  int `json:"total_threads" gorethink:"total_threads,omitempty"`
+	System bool   `json:"system" gorethink:"system"`
 }

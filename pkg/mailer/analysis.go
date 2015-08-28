@@ -36,7 +36,11 @@ func analyzeEmail(n *models.EmailNode, input []byte) error {
 	n.BodyPosition = [2]int{n.BasePosition + seperator + len(nl), n.BasePosition + len(input)}
 
 	// Check if the node is multipart
-	media, params, err := mime.ParseMediaType(headers.Get("Content-Type"))
+	ctype := headers.Get("Content-Type")
+	if ctype == "" {
+		ctype = "text/plain"
+	}
+	media, params, err := mime.ParseMediaType(ctype)
 	if err != nil {
 		return err
 	}

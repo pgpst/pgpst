@@ -156,9 +156,11 @@ func (c *Connection) handleRCPT(cmd *command) {
 		return
 	}
 
+	// Add it to the recipients list
+	c.Envelope.Recipients = append(c.Envelope.Recipients, address)
+
 	// Execute the recipient checking chain
 	oh := func(_ *Connection) {
-		c.Envelope.Recipients = append(c.Envelope.Recipients, address)
 		c.reply(250, "Go ahead.")
 	}
 

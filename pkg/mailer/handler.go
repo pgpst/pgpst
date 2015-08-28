@@ -9,13 +9,15 @@ import (
 	"errors"
 	"io"
 	"net/mail"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
-	"github.com/pgpst/pgpst/internal/github.com/lavab/go-spamc"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
+	"github.com/pgpst/pgpst/internal/github.com/lavab/go-spamc"
 	"github.com/pgpst/pgpst/internal/github.com/pgpst/smtpd"
 	"github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp"
 
@@ -25,7 +27,11 @@ import (
 
 func (m *Mailer) Wrap(x func()) func() {
 	return func() {
-		m.Raven.CapturePanic(x, nil)
+		if m.Raven != nil {
+			m.Raven.CapturePanic(x, nil)
+		} else {
+			x()
+		}
 	}
 }
 
@@ -55,7 +61,7 @@ func (m *Mailer) HandleRecipient(next func(conn *smtpd.Connection)) func(conn *s
 			conn.Envelope.Recipients[len(conn.Envelope.Recipients)-1],
 		)
 		if err != nil {
-			conn.Error(err)
+			m.Error(conn, err)
 			return
 		}
 
@@ -76,7 +82,7 @@ func (m *Mailer) HandleRecipient(next func(conn *smtpd.Connection)) func(conn *s
 					r.Table("keys").Get(address.Field("public_key")),
 					r.Branch(
 						address.HasFields("id"),
-						r.Table("keys").GetAllByIndex("owner", address.Field("owner")).OrderBy("date_created").Do(func(keys r.Term) r.Term {
+						r.Table("keys").GetAllByIndex("owner", address.Field("owner")).OrderBy("date_created").CoerceTo("array").Do(func(keys r.Term) r.Term {
 							return r.Branch(
 								keys.Count().Gt(0),
 								keys.Nth(-1),
@@ -99,7 +105,7 @@ func (m *Mailer) HandleRecipient(next func(conn *smtpd.Connection)) func(conn *s
 						"Spam",
 						data.Field("account").Field("id"),
 						true,
-					}).Do(func(result r.Term) r.Term {
+					}).CoerceTo("array").Do(func(result r.Term) r.Term {
 						return r.Branch(
 							result.Count().Eq(2),
 							map[string]interface{}{
@@ -114,25 +120,28 @@ func (m *Mailer) HandleRecipient(next func(conn *smtpd.Connection)) func(conn *s
 			})
 		}).Run(m.Rethink)
 		if err != nil {
-			conn.Error(err)
+			m.Error(conn, err)
 			return
 		}
 		defer cursor.Close()
 		var result recipient
 		if err := cursor.One(&result); err != nil {
-			conn.Error(err)
+			m.Error(conn, err)
 			return
 		}
 
 		// Check if anything got matched
-		if result.Address == nil || result.Address.ID == "" || result.Account == nil || result.Account.ID == "" ||
-			result.Key == nil {
+		if result.Address == nil || result.Address.ID == "" || result.Account == nil || result.Account.ID == "" {
 			conn.Error(errors.New("No such address"))
+			return
+		}
+		if result.Key == nil || result.Labels.Inbox == "" || result.Labels.Spam == "" {
+			conn.Error(errors.New("Account is not configured"))
 			return
 		}
 
 		// Append the result to the recipients
-		recipients = append(recipients, result)
+		conn.Environment["recipients"] = append(recipients, result)
 
 		// Run the next handler
 		next(conn)
@@ -179,7 +188,7 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 		// First run the analysis algorithm to generate an email description
 		node := &models.EmailNode{}
 		if err := analyzeEmail(node, conn.Envelope.Data); err != nil {
-			conn.Error(err)
+			m.Error(conn, err)
 			return
 		}
 
@@ -192,29 +201,36 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 				messageID = messageID[x1i+1 : x1i+x2i+1]
 			}
 		}
+		if messageID == "" {
+			messageID = uniuri.NewLen(uniuri.UUIDLen) + "@invalid-incoming.pgp.st"
+		}
 
 		// Generate the members field
 		fromHeader, err := mail.ParseAddress(node.Headers.Get("From"))
 		if err != nil {
-			conn.Error(err)
-			return
-		}
-		toHeader, err := node.Headers.AddressList("From")
-		if err != nil {
-			conn.Error(err)
-			return
-		}
-		ccHeader, err := node.Headers.AddressList("CC")
-		if err != nil {
-			conn.Error(err)
+			m.Error(conn, err)
 			return
 		}
 		members := []string{fromHeader.Address}
+
+		toHeader, err := node.Headers.AddressList("From")
+		if err != nil {
+			m.Error(conn, err)
+			return
+		}
 		for _, to := range toHeader {
 			members = append(members, to.Address)
 		}
-		for _, cc := range ccHeader {
-			members = append(members, cc.Address)
+
+		if x := node.Headers.Get("CC"); x != "" {
+			ccHeader, err := node.Headers.AddressList("CC")
+			if err != nil {
+				m.Error(conn, err)
+				return
+			}
+			for _, cc := range ccHeader {
+				members = append(members, cc.Address)
+			}
 		}
 
 		// Get the recipients list from the scope
@@ -223,7 +239,7 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 			// Parse the found key
 			keyring, err := openpgp.ReadKeyRing(bytes.NewReader(recipient.Key.Body))
 			if err != nil {
-				conn.Error(err)
+				m.Error(conn, err)
 				return
 			}
 
@@ -240,21 +256,21 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 			// Generate a new key
 			key := make([]byte, 32)
 			if _, err := io.ReadFull(rand.Reader, key); err != nil {
-				conn.Error(err)
+				m.Error(conn, err)
 				return
 			}
 
 			// Create a new cipher
 			block, err := aes.NewCipher(key)
 			if err != nil {
-				conn.Error(err)
+				m.Error(conn, err)
 				return
 			}
 
 			// Acquire a secure counter nonce for AES-CTR
 			nonce := make([]byte, aes.BlockSize)
 			if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-				conn.Error(err)
+				m.Error(conn, err)
 				return
 			}
 
@@ -271,12 +287,12 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 				Description: node,
 			})
 			if err != nil {
-				conn.Error(err)
+				m.Error(conn, err)
 				return
 			}
 			encryptedManifest, err := utils.PGPEncrypt(manifest, keyring)
 			if err != nil {
-				conn.Error(err)
+				m.Error(conn, err)
 				return
 			}
 			email.Manifest = encryptedManifest
@@ -316,12 +332,12 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 					)
 				}).Run(m.Rethink)
 				if err != nil {
-					conn.Error(err)
+					m.Error(conn, err)
 					return
 				}
 				defer cursor.Close()
 				if err := cursor.One(&thread); err != nil {
-					conn.Error(err)
+					m.Error(conn, err)
 					return
 				}
 
@@ -356,7 +372,7 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 				}
 
 				if err := r.Table("threads").Insert(thread).Exec(m.Rethink); err != nil {
-					conn.Error(err)
+					m.Error(conn, err)
 					return
 				}
 			} else {
@@ -420,14 +436,14 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 				}
 
 				if err := r.Table("threads").Get(thread.ID).Update(update).Exec(m.Rethink); err != nil {
-					conn.Error(err)
+					m.Error(conn, err)
 					return
 				}
 			}
 
 			email.Thread = thread.ID
 			if err := r.Table("emails").Insert(email).Exec(m.Rethink); err != nil {
-				conn.Error(err)
+				m.Error(conn, err)
 				return
 			}
 
@@ -436,5 +452,16 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 				"account": recipient.Account.MainAddress,
 			}).Info("Email received")
 		}
+
+		next(conn)
 	}
+}
+
+func (m *Mailer) Error(conn *smtpd.Connection, err error) {
+	_, file, line, _ := runtime.Caller(1)
+	m.Log.WithFields(logrus.Fields{
+		"file": filepath.Base(file),
+		"line": line,
+	}).Error(err)
+	conn.Error(err)
 }
