@@ -142,3 +142,69 @@ func (a *API) createKey(c *gin.Context) {
 
 	c.JSON(201, key)
 }
+
+func (a *API) readKey(c *gin.Context) {
+	// Resolve the ID param
+	id := c.Param("id")
+	if len(id) != 40 {
+		// Look up by email
+		cursor, err := r.Table("addresses").Get(id).Default(map[string]interface{}{}).Run(a.Rethink)
+		if err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		defer cursor.Close()
+		var address *models.Address
+		if err := cursor.One(&address); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Check if we've found that address
+		if address.ID == "" {
+			c.JSON(404, &gin.H{
+				"code":    0,
+				"message": "Address not found",
+			})
+			return
+		}
+
+		// Set the ID accordingly
+		id = address.PublicKey
+	}
+
+	// Fetch the key from database
+	cursor, err := r.Table("keys").Get(id).Default(map[string]interface{}{}).Run(a.Rethink)
+	if err != nil {
+		c.JSON(500, &gin.H{
+			"code":    0,
+			"message": err.Error(),
+		})
+		return
+	}
+	defer cursor.Close()
+	var key *models.Key
+	if err := cursor.One(&key); err != nil {
+		c.JSON(500, &gin.H{
+			"code":    0,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Ensure that it exists, write the response
+	if key.ID == "" {
+		c.JSON(404, &gin.H{
+			"code":    0,
+			"message": "Key not found",
+		})
+		return
+	}
+	c.JSON(200, key)
+}
