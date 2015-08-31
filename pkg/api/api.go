@@ -90,7 +90,7 @@ func (a *API) Main() {
 			// Accounts
 			//v1a.GET("/accounts", a.listAccounts)
 			v1a.GET("/accounts/:id", a.readAccount)
-			//v1a.PUT("/accounts/:id", a.updateAccount)
+			v1a.PUT("/accounts/:id", a.updateAccount)
 			//v1a.DELETE("/accounts/:id", a.deleteAccount)
 			//v1a.GET("/accounts/:id/keys", a.getAccountKeys)
 
