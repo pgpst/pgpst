@@ -416,3 +416,172 @@ func (a *API) readAccount(c *gin.Context) {
 
 	c.JSON(200, result)
 }
+
+func (a *API) updateAccount(c *gin.Context) {
+	// Get token and account info from the context
+	var (
+		account = c.MustGet("account").(*models.Account)
+		token   = c.MustGet("token").(*models.Token)
+	)
+
+	// Decode the input
+	var input struct {
+		MainAddress string `json:"main_address"`
+		NewPassword []byte `json:"new_password"`
+		OldPassword []byte `json:"old_password"`
+	}
+	if err := c.Bind(&input); err != nil {
+		c.JSON(422, &gin.H{
+			"code":    0,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	var newAddress *models.Address
+	if input.MainAddress != "" {
+		// Fetch address from the database
+		cursor, err := r.Table("addresses").Get(input.MainAddress).Default(map[string]interface{}{}).Run(a.Rethink)
+		if err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		defer cursor.Close()
+		if err := cursor.One(&newAddress); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Verify that we got something
+		if newAddress.ID == "" {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "No such address exists",
+			})
+			return
+		}
+	}
+
+	// Resolve the account ID and check scope accordingly
+	id := c.Param("id")
+	if id == "me" {
+		// Swap the ID to own account's ID
+		id = account.ID
+	}
+
+	if id == account.ID {
+		// Check the scope
+		if !models.InScope(token.Scope, []string{"account:modify"}) {
+			c.JSON(403, &gin.H{
+				"code":  0,
+				"error": "Your token has insufficient scope",
+			})
+			return
+		}
+
+		// Validate password
+		valid, _, err := account.VerifyPassword(input.OldPassword)
+		if err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		if !valid {
+			c.JSON(401, &gin.H{
+				"code":    0,
+				"message": "Invalid password",
+			})
+			return
+		}
+	} else {
+		// Check the scope
+		if !models.InScope(token.Scope, []string{"admin"}) {
+			c.JSON(403, &gin.H{
+				"code":  0,
+				"error": "Your token has insufficient scope",
+			})
+			return
+		}
+
+		// Fetch the account from the database
+		cursor, err := r.Table("accounts").Get(id).Default(map[string]interface{}{}).Run(a.Rethink)
+		if err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+		defer cursor.Close()
+		if err := cursor.One(&account); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+
+		// Ensure that we got something
+		if account.ID == "" {
+			c.JSON(404, &gin.H{
+				"code":  0,
+				"error": "Account not found",
+			})
+			return
+		}
+	}
+
+	// Apply change to the password
+	if input.NewPassword != nil && len(input.NewPassword) != 0 {
+		if len(input.NewPassword) == 32 {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "Invalid new password format",
+			})
+			return
+		}
+
+		if err := account.SetPassword(input.NewPassword); err != nil {
+			c.JSON(500, &gin.H{
+				"code":    0,
+				"message": err.Error(),
+			})
+			return
+		}
+	}
+
+	// Apply change to the main address setting
+	if newAddress.ID != "" {
+		// Check address ownership
+		if newAddress.Owner != account.ID {
+			c.JSON(422, &gin.H{
+				"code":    0,
+				"message": "User does not own that address",
+			})
+			return
+		}
+
+		account.MainAddress = newAddress.ID
+	}
+
+	// Perform the update
+	if err := r.Table("accounts").Update(account).Exec(a.Rethink); err != nil {
+		c.JSON(500, &gin.H{
+			"code":    0,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// Write the response
+	account.Password = nil
+	c.JSON(200, account)
+}
