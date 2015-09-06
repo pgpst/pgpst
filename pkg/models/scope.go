@@ -31,6 +31,7 @@ import (
 //   :modify
 //   :delete
 // - resources
+//   :create
 //   :read
 //   :modify
 //   :delete

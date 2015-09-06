@@ -92,7 +92,13 @@ func (a *API) Main() {
 			v1a.GET("/accounts/:id", a.readAccount)
 			v1a.PUT("/accounts/:id", a.updateAccount)
 			//v1a.DELETE("/accounts/:id", a.deleteAccount)
-			//v1a.GET("/accounts/:id/keys", a.getAccountKeys)
+			v1a.GET("/accounts/:id/addresses", a.getAccountAddresses)
+			//v1a.GET("/accounts/:id/emails")
+			v1a.GET("/accounts/:id/keys", a.getAccountKeys)
+			v1a.GET("/accounts/:id/labels", a.getAccountLabels)
+			v1a.GET("/accounts/:id/resources", a.getAccountResources)
+			//v1a.GET("/accounts/:id/threads")
+			v1a.GET("/accounts/:id/tokens", a.getAccountTokens)
 
 			// Addresses
 			//v1a.POST("/addresses", a.createAddress)
@@ -120,6 +126,13 @@ func (a *API) Main() {
 			//v1a.PUT("/labels/:id", a.updateLabel)
 			//v1a.DELETE("/labels/:id", a.deleteLabel)
 
+			// Resources
+			v1a.POST("/resources", a.createResource)
+			//v1a.GET("/resources", a.listResources)
+			v1a.GET("/resources/:id", a.readResource)
+			//v1a.PUT("/resources/:id", a.updateResource)
+			//v1a.DELETE("/resources/:id", a.deleteResource)
+
 			// Threads
 			//v1a.GET("/threads", a.listThreads)
 			//v1a.GET("/threads/:id", a.readThread)
@@ -132,13 +145,6 @@ func (a *API) Main() {
 			//v1a.GET("/tokens/:id", a.readToken)
 			//v1a.PUT("/tokens/:id", a.updateToken)
 			//v1a.DELETE("/tokens/:id", a.deleteToken)
-
-			// Resources
-			//v1a.POST("/resources", a.createResource)
-			//v1a.GET("/resources", a.listResources)
-			//v1a.GET("/resources/:id", a.readResource)
-			//v1a.PUT("/resources/:id", a.updateResource)
-			//v1a.DELETE("/resources/:id", a.deleteResource)
 		}
 	}
 

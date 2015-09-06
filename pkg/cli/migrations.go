@@ -221,4 +221,25 @@ var migrations = []migration{
 			}
 		},
 	},
+	{
+		Revision: 4,
+		Name:     "labels list",
+		Migrate: func(opts *r.ConnectOpts) []r.Term {
+			return []r.Term{
+				r.Table("threads").IndexCreateFunc("labelsIsRead", func(thread r.Term) []interface{} {
+					return thread.Field("labels").Map(func(label r.Term) []interface{} {
+						return []interface{}{
+							label,
+							thread.Field("is_read"),
+						}
+					})
+				}, r.IndexCreateOpts{Multi: true}),
+			}
+		},
+		Revert: func(opts *r.ConnectOpts) []r.Term {
+			return []r.Term{
+				r.Table("threads").IndexDrop("labelsIsRead"),
+			}
+		},
+	},
 }

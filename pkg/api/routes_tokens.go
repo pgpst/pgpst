@@ -133,3 +133,59 @@ func (a *API) createToken(c *gin.Context) {
 	c.JSON(201, token)
 	return
 }
+
+func (a *API) getAccountTokens(c *gin.Context) {
+	// Token and account from context
+	var (
+		ownAccount = c.MustGet("account").(*models.Account)
+		token      = c.MustGet("token").(*models.Token)
+	)
+
+	// Resolve the ID from the URL
+	id := c.Param("id")
+	if id == "me" {
+		id = ownAccount.ID
+	}
+
+	// Check the scope
+	if id == ownAccount.ID {
+		if !models.InScope(token.Scope, []string{"tokens:read"}) {
+			c.JSON(403, &gin.H{
+				"code":  0,
+				"error": "Your token has insufficient scope",
+			})
+			return
+		}
+	} else {
+		if !models.InScope(token.Scope, []string{"admin"}) {
+			c.JSON(403, &gin.H{
+				"code":  0,
+				"error": "Your token has insufficient scope",
+			})
+			return
+		}
+	}
+
+	// Get tokens from database
+	cursor, err := r.Table("tokens").GetAllByIndex("owner", id).Run(a.Rethink)
+	if err != nil {
+		c.JSON(500, &gin.H{
+			"code":  0,
+			"error": err.Error(),
+		})
+		return
+	}
+	defer cursor.Close()
+	var tokens []*models.Token
+	if err := cursor.All(&tokens); err != nil {
+		c.JSON(500, &gin.H{
+			"code":  0,
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// Write the response
+	c.JSON(200, tokens)
+	return
+}
