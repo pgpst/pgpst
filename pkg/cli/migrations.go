@@ -226,7 +226,7 @@ var migrations = []migration{
 		Name:     "labels list",
 		Migrate: func(opts *r.ConnectOpts) []r.Term {
 			return []r.Term{
-				r.Table("threads").IndexCreateFunc("labelsIsRead", func(thread r.Term) []interface{} {
+				r.Table("threads").IndexCreateFunc("labelsIsRead", func(thread r.Term) r.Term {
 					return thread.Field("labels").Map(func(label r.Term) []interface{} {
 						return []interface{}{
 							label,

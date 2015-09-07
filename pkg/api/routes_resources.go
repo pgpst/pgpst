@@ -119,3 +119,53 @@ func (a *API) getAccountResources(c *gin.Context) {
 	c.JSON(200, resources)
 	return
 }
+
+func (a *API) readResource(c *gin.Context) {
+	// Get token and account info from the context
+	var (
+		account = c.MustGet("account").(*models.Account)
+		token   = c.MustGet("token").(*models.Token)
+	)
+
+	// Resolve the resource ID and fetch it from database
+	id := c.Param("id")
+	cursor, err := r.Table("resources").Get(id).Run(a.Rethink)
+	if err != nil {
+		c.JSON(500, &gin.H{
+			"code":  0,
+			"error": err.Error(),
+		})
+		return
+	}
+	defer cursor.Close()
+	var resource *models.Resource
+	if err := cursor.All(&resource); err != nil {
+		c.JSON(500, &gin.H{
+			"code":  0,
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if resource.Owner == account.ID {
+		// Check the scope
+		if !models.InScope(token.Scope, []string{"resources:read"}) {
+			c.JSON(403, &gin.H{
+				"code":  0,
+				"error": "Your token has insufficient scope",
+			})
+			return
+		}
+	} else {
+		// Check the scope
+		if !models.InScope(token.Scope, []string{"admin"}) {
+			c.JSON(403, &gin.H{
+				"code":  0,
+				"error": "Your token has insufficient scope",
+			})
+			return
+		}
+	}
+
+	c.JSON(200, resource)
+}
