@@ -2,8 +2,6 @@ package mailer
 
 import (
 	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
@@ -14,12 +12,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/codahale/chacha20"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/lavab/go-spamc"
 	"github.com/pgpst/pgpst/internal/github.com/pgpst/smtpd"
 	"github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp"
+	"golang.org/x/crypto/poly1305"
 
 	"github.com/pgpst/pgpst/pkg/models"
 	"github.com/pgpst/pgpst/pkg/utils"
@@ -259,25 +259,59 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 				m.Error(conn, err)
 				return
 			}
+			akey := [32]byte{}
+			copy(akey[:], key)
 
-			// Create a new cipher
-			block, err := aes.NewCipher(key)
+			// Generate a new nonce
+			nonce := make([]byte, 8)
+			if _, err = rand.Read(nonce); err != nil {
+				m.Error(conn, err)
+				return
+			}
+
+			// Set up a new stream
+			stream, err := chacha20.New(key, nonce)
 			if err != nil {
 				m.Error(conn, err)
 				return
 			}
 
-			// Acquire a secure counter nonce for AES-CTR
-			nonce := make([]byte, aes.BlockSize)
-			if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
-				m.Error(conn, err)
-				return
+			// Prepare output
+			ciphertext := make(
+				[]byte,
+				len(conn.Envelope.Data)+
+					chacha20.NonceSize+
+					(len(conn.Envelope.Data)/1024+1)*16,
+			)
+
+			// First write the nonce
+			copy(ciphertext[:chacha20.NonceSize], nonce)
+
+			// Then write the authenticated encrypted stream
+			oi := chacha20.NonceSize
+			for i := 0; i < len(conn.Envelope.Data); i += 1024 {
+				// Get the chunk
+				max := i + 1024
+				if max > len(conn.Envelope.Data) {
+					max = len(conn.Envelope.Data)
+				}
+				chunk := conn.Envelope.Data[i:max]
+
+				// Encrypt the block
+				stream.XORKeyStream(ciphertext[oi:oi+len(chunk)], chunk)
+
+				// Authenticate it
+				var out [16]byte
+				poly1305.Sum(&out, ciphertext[oi:oi+len(chunk)], &akey)
+
+				// Write it into the result
+				copy(ciphertext[oi+len(chunk):oi+len(chunk)+poly1305.TagSize], out[:])
+
+				// Increase the counter
+				oi += 1024 + poly1305.TagSize
 			}
 
-			// Initialize a new counter and encrypt the data
-			ciphertext := make([]byte, len(conn.Envelope.Data))
-			stream := cipher.NewCTR(block, nonce)
-			stream.XORKeyStream(ciphertext, conn.Envelope.Data)
+			// Save it to the body
 			email.Body = ciphertext
 
 			// Create a manifest and encrypt it
