@@ -65,6 +65,13 @@
 			"revisionTime": "2015-07-05T13:10:48+03:00"
 		},
 		{
+			"canonical": "github.com/codahale/chacha20",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/github.com/codahale/chacha20",
+			"revision": "7be6a955b0468becb6aaa609b484b52fbf355b76",
+			"revisionTime": "2015-01-25T12:30:27-08:00"
+		},
+		{
 			"canonical": "github.com/codegangsta/cli",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/codegangsta/cli",
@@ -406,6 +413,13 @@
 			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/openpgp/s2k",
 			"revision": "8fec09c61d5d",
 			"revisionTime": "2014-11-10T08:50:25+11:00"
+		},
+		{
+			"canonical": "golang.org/x/crypto/poly1305",
+			"comment": "",
+			"local": "github.com/pgpst/pgpst/internal/golang.org/x/crypto/poly1305",
+			"revision": "2f3083f6163ef51179ad42ed523a18c9a1141467",
+			"revisionTime": "2015-07-31T22:59:06+02:00"
 		},
 		{
 			"canonical": "golang.org/x/crypto/ripemd160",
