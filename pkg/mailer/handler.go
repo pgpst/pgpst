@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pgpst/pgpst/internal/github.com/codahale/chacha20"
 	"github.com/pgpst/pgpst/internal/github.com/Sirupsen/logrus"
+	"github.com/pgpst/pgpst/internal/github.com/codahale/chacha20"
 	r "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink"
 	"github.com/pgpst/pgpst/internal/github.com/dchest/uniuri"
 	"github.com/pgpst/pgpst/internal/github.com/lavab/go-spamc"
@@ -358,7 +358,7 @@ func (m *Mailer) HandleDelivery(next func(conn *smtpd.Connection)) func(conn *sm
 				cursor, err := r.Table("emails").GetAllByIndex("messageIDOwner", []interface{}{
 					references,
 					recipient.Account.ID,
-				}).Do(func(emails r.Term) r.Term {
+				}).CoerceTo("array").Do(func(emails r.Term) r.Term {
 					return r.Branch(
 						emails.Count().Eq(1),
 						r.Table("threads").Get(emails.Nth(0).Field("thread")).Default(map[string]interface{}{}),
