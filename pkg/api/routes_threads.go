@@ -7,6 +7,11 @@ import (
 	"github.com/pgpst/pgpst/pkg/models"
 )
 
+type extendedThread struct {
+	*models.Thread
+	Manifest []byte `gorethink:"manifest" json:"manifest"`
+}
+
 func (a *API) getLabelThreads(c *gin.Context) {
 	// Token and account from context
 	var (
@@ -55,7 +60,19 @@ func (a *API) getLabelThreads(c *gin.Context) {
 	}
 
 	// Get threads from the database
-	cursor, err = r.Table("threads").GetAllByIndex("labels", label.ID).OrderBy(r.Desc("date_modified")).Run(a.Rethink)
+	cursor, err = r.Table("threads").GetAllByIndex("labels", label.ID).OrderBy(r.Desc("date_modified")).Map(func(thread r.Term) r.Term {
+		return thread.Merge(map[string]interface{}{
+			"manifest": r.Table("emails").GetAllByIndex("thread", thread.Field("id")).OrderBy("date_modified").CoerceTo("array"),
+		}).Do(func(thread r.Term) r.Term {
+			return r.Branch(
+				thread.Field("manifest").Count().Gt(0),
+				thread.Merge(map[string]interface{}{
+					"manifest": thread.Field("manifest").Nth(0).Field("manifest"),
+				}),
+				thread.Without("manifest"),
+			)
+		})
+	}).Run(a.Rethink)
 	if err != nil {
 		c.JSON(500, &gin.H{
 			"code":  0,
@@ -63,7 +80,7 @@ func (a *API) getLabelThreads(c *gin.Context) {
 		})
 		return
 	}
-	var threads []*models.Thread
+	var threads []*extendedThread
 	if err := cursor.All(&threads); err != nil {
 		c.JSON(500, &gin.H{
 			"code":  0,
@@ -72,7 +89,7 @@ func (a *API) getLabelThreads(c *gin.Context) {
 		return
 	}
 	if threads == nil {
-		threads = []*models.Thread{}
+		threads = []*extendedThread{}
 	}
 
 	// Write the response
