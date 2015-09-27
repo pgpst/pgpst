@@ -64,7 +64,7 @@ func (a *API) getLabelThreads(c *gin.Context) {
 		return
 	}
 	var threads []*models.Thread
-	if err := cursor.One(&threads); err != nil {
+	if err := cursor.All(&threads); err != nil {
 		c.JSON(500, &gin.H{
 			"code":  0,
 			"error": err.Error(),
