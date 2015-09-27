@@ -55,7 +55,7 @@ func (a *API) getLabelThreads(c *gin.Context) {
 	}
 
 	// Get threads from the database
-	cursor, err = r.Table("threads").GetAllByIndex("labels", label.ID).Default([]interface{}{}).OrderBy(r.Desc("date_modified")).Run(a.Rethink)
+	cursor, err = r.Table("threads").GetAllByIndex("labels", label.ID).OrderBy(r.Desc("date_modified")).Run(a.Rethink)
 	if err != nil {
 		c.JSON(500, &gin.H{
 			"code":  0,
@@ -70,6 +70,9 @@ func (a *API) getLabelThreads(c *gin.Context) {
 			"error": err.Error(),
 		})
 		return
+	}
+	if threads == nil {
+		threads = []*models.Thread{}
 	}
 
 	// Write the response
