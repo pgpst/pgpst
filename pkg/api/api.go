@@ -125,6 +125,7 @@ func (a *API) Main() {
 			//v1a.GET("/labels/:id", a.readLabel)
 			//v1a.PUT("/labels/:id", a.updateLabel)
 			//v1a.DELETE("/labels/:id", a.deleteLabel)
+			v1a.GET("/labels/:id/threads", a.getLabelThreads)
 
 			// Resources
 			v1a.POST("/resources", a.createResource)
