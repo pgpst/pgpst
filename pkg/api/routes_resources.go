@@ -99,7 +99,7 @@ func (a *API) getAccountResources(c *gin.Context) {
 	}
 
 	// 1. Owner filter
-	query := r.Table("resources").GetAllByIndex("owner", id).Without("body")
+	query := r.Table("resources").GetAllByIndex("owner", id)
 
 	// 2. Tag filter
 	if tagstr := c.Query("tags"); tagstr != "" {
