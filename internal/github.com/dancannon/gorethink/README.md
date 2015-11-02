@@ -1,6 +1,6 @@
 # GoRethink - RethinkDB Driver for Go 
 
-[![GitHub tag](https://img.shields.io/github/tag/dancannon/gorethink.svg?style=flat)](https://github.com/dancannon/gorethink/releases/tag/v1.0.0-rc.3)
+[![GitHub tag](https://img.shields.io/github/tag/dancannon/gorethink.svg?style=flat)](https://github.com/dancannon/gorethink/releases)
 [![GoDoc](https://godoc.org/github.com/dancannon/gorethink?status.png)](https://godoc.org/github.com/dancannon/gorethink)
 [![build status](https://img.shields.io/travis/dancannon/gorethink/master.svg "build status")](https://travis-ci.org/dancannon/gorethink) 
 
@@ -8,7 +8,7 @@
 
 ![GoRethink Logo](https://raw.github.com/wiki/dancannon/gorethink/gopher-and-thinker-s.png "Golang Gopher and RethinkDB Thinker")
 
-Current version: v1.0.0 (RethinkDB v2.0)
+Current version: v1.1.4 (RethinkDB v2.1)
 
 Please note that this version of the driver only supports versions of RethinkDB using the v0.4 protocol (any versions of the driver older than RethinkDB 2.0 will not work).
 
@@ -107,7 +107,7 @@ r.Expr(map[string]interface{}{"a": 1, "b": 2, "c": 3}).Run(session)
 ```
 Get Example
 ```go
-r.Db("database").Table("table").Get("GUID").Run(session)
+r.DB("database").Table("table").Get("GUID").Run(session)
 ```
 Map Example (Func)
 ```go
@@ -121,7 +121,7 @@ r.Expr([]interface{}{1, 2, 3, 4, 5}).Map(r.Row.Add(1)).Run(session)
 ```
 Between (Optional Args) Example
 ```go
-r.Db("database").Table("table").Between(1, 10, r.BetweenOpts{
+r.DB("database").Table("table").Between(1, 10, r.BetweenOpts{
     Index: "num",
     RightBound: "closed",
 }).Run(session)
@@ -142,7 +142,7 @@ Different result types are returned depending on what function is used to execut
 Example:
 
 ```go
-res, err := r.Db("database").Table("tablename").Get(key).Run(session)
+res, err := r.DB("database").Table("tablename").Get(key).Run(session)
 if err != nil {
     // error
 }
@@ -186,7 +186,7 @@ if err != nil {
 }
 ```
 
-## Encoding/Decoding Structs
+## Encoding/Decoding
 When passing structs to Expr(And functions that use Expr such as Insert, Update) the structs are encoded into a map before being sent to the server. Each exported field is added to the map unless
 
   - the field's tag is "-", or
@@ -212,6 +212,18 @@ Field int `gorethink:",omitempty"`
 ```
 
 **NOTE:** It is strongly recommended that struct tags are used to explicitly define the mapping between your Go type and how the data is stored by RethinkDB. This is especially important when using an `Id` field as by default RethinkDB will create a field named `id` as the primary key (note that the RethinkDB field is lowercase but the Go version starts with a capital letter).
+
+When encoding maps with non-string keys the key values are automatically converted to strings where possible, however it is recommended that you use strings where possible (for example `map[string]T`).
+
+## Logging
+
+By default the driver logs errors when it fails to connect to the database. If you would like more verbose error logging you can call `r.SetVerbose(true)`.
+
+Alternatively if you wish to modify the logging behaviour you can modify the logger provided by `github.com/Sirupsen/logrus`. For example the following code completely disable the logger:
+
+```go
+r.Log.Out = ioutil.Discard
+```
 
 ## Benchmarks
 
@@ -248,6 +260,12 @@ BenchmarkSequentialSoftWritesParallel10      10000                           263
 ## Examples
 
 Many functions have examples and are viewable in the godoc, alternatively view some more full features examples on the [wiki](https://github.com/dancannon/gorethink/wiki/Examples).
+
+## Further reading
+
+- [GoRethink Goes 1.0](https://www.compose.io/articles/gorethink-goes-1-0/)
+- [Go, RethinkDB & Changefeeds](https://www.compose.io/articles/go-rethinkdb-and-changefeeds-part-1/)
+- [Build an IRC bot in Go with RethinkDB changefeeds](http://rethinkdb.com/blog/go-irc-bot/)
 
 ## License
 

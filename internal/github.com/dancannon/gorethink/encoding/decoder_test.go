@@ -124,6 +124,11 @@ type S13 struct {
 	S8
 }
 
+type PointerBasic struct {
+	X int
+	Y *int
+}
+
 type Pointer struct {
 	PPoint *Point
 	Point  Point
@@ -141,6 +146,11 @@ type Ambig struct {
 	First  int `gorethink:"HELLO"`
 	Second int `gorethink:"Hello"`
 }
+
+// Decode test helper vars
+var (
+	sampleInt = 2
+)
 
 var decodeTests = []decodeTest{
 	// basic types
@@ -252,6 +262,16 @@ var decodeTests = []decodeTest{
 		in:  map[string]interface{}{"Point": map[string]interface{}{"Z": 2}},
 		ptr: new(Pointer),
 		out: Pointer{PPoint: nil, Point: Point{Z: 2}},
+	},
+	{
+		in:  map[string]interface{}{"x": 2},
+		ptr: new(PointerBasic),
+		out: PointerBasic{X: 2, Y: nil},
+	},
+	{
+		in:  map[string]interface{}{"x": 2, "y": 2},
+		ptr: new(PointerBasic),
+		out: PointerBasic{X: 2, Y: &sampleInt},
 	},
 }
 
@@ -412,7 +432,27 @@ func TestDecodeUnmarshalerPointer(t *testing.T) {
 	}
 }
 
+func TestDecodeMapIntKeys(t *testing.T) {
+	input := map[string]int{"1": 1, "2": 2, "3": 3}
+	want := map[int]int{1: 1, 2: 2, 3: 3}
+
+	out := map[int]int{}
+	err := Decode(&out, input)
+	if err != nil {
+		t.Errorf("got error %v, expected nil", err)
+	}
+	if !jsonEqual(out, want) {
+		t.Errorf("got %q, want %q", out, want)
+	}
+}
+
 func jsonEqual(a, b interface{}) bool {
+	// First check using reflect.DeepEqual
+	if reflect.DeepEqual(a, b) {
+		return true
+	}
+
+	// Then use jsonEqual
 	ba, err := json.Marshal(a)
 	if err != nil {
 		panic(err)

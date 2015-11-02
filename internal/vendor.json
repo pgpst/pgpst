@@ -82,29 +82,29 @@
 			"canonical": "github.com/dancannon/gorethink",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink",
-			"revision": "8aca6ba2cc6e873299617d730fac0d7f6593113a",
-			"revisionTime": "2015-06-29T21:40:01+01:00"
+			"revision": "6468f77f2e54184f2ff8fec0006c008ac9eca496",
+			"revisionTime": "2015-10-02T21:54:56+01:00"
 		},
 		{
 			"canonical": "github.com/dancannon/gorethink/encoding",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/encoding",
-			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
-			"revisionTime": "2015-06-11T22:12:20+01:00"
+			"revision": "6468f77f2e54184f2ff8fec0006c008ac9eca496",
+			"revisionTime": "2015-10-02T21:54:56+01:00"
 		},
 		{
 			"canonical": "github.com/dancannon/gorethink/ql2",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/ql2",
-			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
-			"revisionTime": "2015-06-11T22:12:20+01:00"
+			"revision": "6468f77f2e54184f2ff8fec0006c008ac9eca496",
+			"revisionTime": "2015-10-02T21:54:56+01:00"
 		},
 		{
 			"canonical": "github.com/dancannon/gorethink/types",
 			"comment": "",
 			"local": "github.com/pgpst/pgpst/internal/github.com/dancannon/gorethink/types",
-			"revision": "c097463176129ff5598c1a57693f1bfa13d99ba5",
-			"revisionTime": "2015-06-11T22:12:20+01:00"
+			"revision": "6468f77f2e54184f2ff8fec0006c008ac9eca496",
+			"revisionTime": "2015-10-02T21:54:56+01:00"
 		},
 		{
 			"canonical": "github.com/dchest/uniuri",

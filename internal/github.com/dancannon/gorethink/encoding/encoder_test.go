@@ -96,7 +96,7 @@ var optionalsExpected = map[string]interface{}{
 func TestOmitEmpty(t *testing.T) {
 	var o Optionals
 	o.Sw = "something"
-	o.Tr = time.Unix(0, 0)
+	o.Tr = time.Unix(0, 0).In(time.UTC)
 	o.Mr = map[string]interface{}{}
 	o.Mo = map[string]interface{}{}
 
@@ -258,5 +258,18 @@ func TestDuplicatedFieldDisappears(t *testing.T) {
 	want := map[string]interface{}{}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("Encode: got %v want %v", got, want)
+	}
+}
+
+func TestEncodeMapIntKeys(t *testing.T) {
+	input := map[int]int{1: 1, 2: 2, 3: 3}
+	want := map[string]int{"1": 1, "2": 2, "3": 3}
+
+	out, err := Encode(input)
+	if err != nil {
+		t.Errorf("got error %v, expected nil", err)
+	}
+	if !jsonEqual(out, want) {
+		t.Errorf("got %q, want %q", out, want)
 	}
 }

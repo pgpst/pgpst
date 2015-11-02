@@ -18,6 +18,20 @@ func (s *RethinkSuite) TestTableCreate(c *test.C) {
 	c.Assert(response.TablesCreated, jsonEquals, 1)
 }
 
+func (s *RethinkSuite) TestTableCreateSessionDatabase(c *test.C) {
+	session, err := Connect(ConnectOpts{
+		Address: url,
+		AuthKey: authKey,
+	})
+	c.Assert(err, test.IsNil)
+	TableDrop("test").Exec(session)
+
+	// Test database creation
+	response, err := TableCreate("test").RunWrite(session)
+	c.Assert(err, test.IsNil)
+	c.Assert(response.TablesCreated, jsonEquals, 1)
+}
+
 func (s *RethinkSuite) TestTableCreatePrimaryKey(c *test.C) {
 	DB("test").TableDrop("testOpts").Exec(session)
 
@@ -125,6 +139,7 @@ func (s *RethinkSuite) TestTableIndexList(c *test.C) {
 
 	DB("test").TableCreate("test").Exec(session)
 	DB("test").Table("test").IndexCreate("test").Exec(session)
+	DB("test").Table("test").IndexWait().Exec(session)
 
 	// Try and find it in the list
 	success := false
@@ -148,6 +163,7 @@ func (s *RethinkSuite) TestTableIndexList(c *test.C) {
 func (s *RethinkSuite) TestTableIndexDelete(c *test.C) {
 	DB("test").TableCreate("test").Exec(session)
 	DB("test").Table("test").IndexCreate("test").Exec(session)
+	DB("test").Table("test").IndexWait().Exec(session)
 
 	// Test database creation
 	query := DB("test").Table("test").IndexDrop("test")
@@ -161,6 +177,7 @@ func (s *RethinkSuite) TestTableIndexRename(c *test.C) {
 	DB("test").TableDrop("test").Exec(session)
 	DB("test").TableCreate("test").Exec(session)
 	DB("test").Table("test").IndexCreate("test").Exec(session)
+	DB("test").Table("test").IndexWait().Exec(session)
 
 	// Test index rename
 	query := DB("test").Table("test").IndexRename("test", "test2")
@@ -247,9 +264,41 @@ func (s *RethinkSuite) TestTableChangesExit(c *test.C) {
 	for _ = range change {
 		n++
 	}
-	if res.Err() != nil {
-		c.Fatal(res.Err())
+	if res.Err() == nil {
+		c.Fatal("No error returned, expected connection closed")
 	}
 
 	c.Assert(n, test.Equals, 5)
+}
+
+func (s *RethinkSuite) TestTableChangesExitNoResults(c *test.C) {
+	DB("test").TableDrop("changes").Exec(session)
+	DB("test").TableCreate("changes").Exec(session)
+
+	var n int
+
+	res, err := DB("test").Table("changes").Changes().Run(session)
+	if err != nil {
+		c.Fatal(err.Error())
+	}
+	c.Assert(res.Type(), test.Equals, "Feed")
+
+	change := make(chan ChangeResponse)
+
+	// Close cursor after one second
+	go func() {
+		<-time.After(time.Second)
+		res.Close()
+	}()
+
+	// Listen for changes
+	res.Listen(change)
+	for _ = range change {
+		n++
+	}
+	if res.Err() == nil {
+		c.Fatal("No error returned, expected connection closed")
+	}
+
+	c.Assert(n, test.Equals, 0)
 }
