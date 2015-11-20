@@ -1,7 +1,6 @@
 .godeps
-apps/pgpst/pgpst
-apps/pgpst-api/pgpst-api
-apps/pgpst-mailer/pgpst-mailer
+vendor
+pgpst
 coverage.out
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)

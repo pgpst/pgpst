@@ -1,0 +1,4 @@
+package: main
+import:
+- package: github.com/koding/multiconfig
+- package: gopkg.in/inconshreveable/log15.v2
