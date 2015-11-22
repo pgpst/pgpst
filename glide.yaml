@@ -1,4 +1,10 @@
 package: main
 import:
 - package: github.com/koding/multiconfig
+  version: master
+  repo: git@github.com:pzduniak/multiconfig.git
+  vcs: git
 - package: gopkg.in/inconshreveable/log15.v2
+- package: github.com/dancannon/gorethink
+- package: github.com/lib/pq
+- package: github.com/mattn/go-sqlite3

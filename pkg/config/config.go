@@ -1,82 +1,74 @@
 package config
 
 type Config struct {
+	// Migrate flag
+	Migrate bool
 	// General settings
 	LogLevel      string `default:"debug"`
-	DefaultDomain string
+	DefaultDomain string `default:"pgp.st"`
 	// Server-specific settings
 	API    APIConfig
 	Mailer MailerConfig
 	// Metadata database settings
-	Database  Database
-	RethinkDB RethinkDBConfig
-	Tiedot    TiedotConfig
+	Database Database `default:"sqlite"`
+	Postgres PostgresConfig
+	SQLite   SQLiteConfig
 	// Blob storage settings
-	Storage    Storage
+	Storage    Storage `default:"filesystem"`
 	WeedFS     WeedFSConfig
 	Filesystem FilesystemConfig
 	// Message queue settings
-	Queue  Queue
+	Queue  Queue `default:"memory"`
 	NSQ    NSQConfig
 	Memory MemoryConfig
 }
 
 // API settings
 type APIConfig struct {
-	Enabled bool
-	Address string
+	Enabled bool   `default:"false"`
+	Address string `default:"0.0.0.0:6030"`
 }
 
 // Mailer settings
 type MailerConfig struct {
-	Enabled           bool
-	Address           string
-	SenderConcurrency int
+	Enabled           bool   `default:"false"`
+	Address           string `default:"0.0.0.0:25"`
+	SenderConcurrency int    `default:"10"`
 	TLSCert           string
 	TLSKey            string
-	WelcomeMessage    string
-	ReadTimeout       int
-	WriteTimeout      int
-	DataTimeout       int
-	MaxConnections    int
-	MaxMessageSize    int
-	MaxRecipients     int
-	RelayAddress      string
-	SpamdAddress      string
+	WelcomeMessage    string `default:"Welcome to the pgp.st Mailer"`
+	ReadTimeout       int    `default:"60"`
+	WriteTimeout      int    `default:"60"`
+	DataTimeout       int    `default:"300"`
+	MaxConnections    int    `default:"100"`
+	MaxMessageSize    int    `default:"104857600"`
+	MaxRecipients     int    `default:"100"`
 }
 
 // Database types
-type Database int
+type Database string
 
 const (
-	RethinkDB Database = iota
-	Tiedot
+	Postgres Database = "postgres"
+	SQLite            = "sqlite"
 )
 
-// RethinkDB settings
-type RethinkDBConfig struct {
-	Addresses     []string
-	Database      string
-	AuthKey       string
-	Timeout       int
-	WriteTimeout  int
-	ReadTimeout   int
-	MaxIdle       int
-	MaxOpen       int
-	DiscoverHosts bool
+// Postgres settings
+type PostgresConfig struct {
+	ConnectionString string `default:"postgres://127.0.0.1:5432/pgpst"`
 }
 
 // Tiedot settings
-type TiedotConfig struct {
-	Path string
+type SQLiteConfig struct {
+	ConnectionString string `default:"~/.pgpst/database.db"`
 }
 
 // Storage types
-type Storage int
+type Storage string
 
 const (
-	WeedFS Storage = iota
-	Filesystem
+	WeedFS     Storage = "weedfs"
+	Filesystem         = "filesystem"
 )
 
 // WeedFS configuration
@@ -86,15 +78,15 @@ type WeedFSConfig struct {
 
 // Filesystem configuration
 type FilesystemConfig struct {
-	Path string
+	Path string `default:"~/.pgpst/storage"`
 }
 
 // Queue types
-type Queue int
+type Queue string
 
 const (
-	NSQ Queue = iota
-	Memory
+	NSQ    Queue = "nsq"
+	Memory       = "memory"
 )
 
 type NSQConfig struct {
