@@ -76,3 +76,18 @@ func (s *SQLite) Revision() (int, error) {
 
 	return -1, nil
 }
+
+func (s *SQLite) Migrate(id int) error {
+	return Migrations[id].Migrate[config.SQLite](s.DB)
+}
+
+func (s *SQLite) SetRevision(id int) error {
+	if _, err := s.DB.Exec(
+		`UPDATE migration_status SET value = ? WHERE key = 'revision'`,
+		id,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}

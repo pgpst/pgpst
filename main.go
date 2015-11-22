@@ -65,7 +65,28 @@ func main() {
 	}
 	il.Debug("Fetched the database revision", "rev", rev)
 
-	// Add the migration code here
+	// Run the migrations
+	if cfg.Migrate && rev < len(database.Migrations)-1 {
+		ml := l.New("module", "migration")
+
+		for i := rev + 1; i < len(database.Migrations); i++ {
+			if err := db.Migrate(i); err != nil {
+				ml.Crit("Migration failed", "name", database.Migrations[i].Name, "error", err)
+				return
+			}
+
+			if err := db.SetRevision(i); err != nil {
+				ml.Crit("Unable to set the revision", "new", i, "error", err)
+				return
+			}
+
+			ml.Info("Executed a migration", "index", i, "name", database.Migrations[i].Name)
+		}
+
+		ml.Info("Migration execution complete.")
+	}
+
+	// Load the storage engine
 	var st storage.Storage
 	switch cfg.Storage {
 	case config.WeedFS:

@@ -58,3 +58,18 @@ func (p *Postgres) Revision() (int, error) {
 
 	return -1, nil
 }
+
+func (p *Postgres) Migrate(id int) error {
+	return Migrations[id].Migrate[config.Postgres](p.DB)
+}
+
+func (p *Postgres) SetRevision(id int) error {
+	if _, err := p.DB.Exec(
+		`UPDATE migration_status SET value = $1 WHERE key = 'revision'`,
+		id,
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
