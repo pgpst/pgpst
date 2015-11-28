@@ -90,8 +90,8 @@ const (
 )
 
 type NSQConfig struct {
-	ServerAddress  string
-	LookupdAddress string
+	ServerAddresses  []string
+	LookupdAddresses []string
 }
 
 type MemoryConfig struct{}

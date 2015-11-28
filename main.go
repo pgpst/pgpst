@@ -8,6 +8,7 @@ import (
 
 	"code.pgp.st/pgpst/pkg/config"
 	"code.pgp.st/pgpst/pkg/database"
+	"code.pgp.st/pgpst/pkg/queue"
 	"code.pgp.st/pgpst/pkg/storage"
 )
 
@@ -109,5 +110,29 @@ func main() {
 		st = fst
 	}
 
+	// Set up the queue
+	var qu queue.Queue
+	switch cfg.Queue {
+	case config.NSQ:
+		nqu, err := queue.NewNSQ(cfg.NSQ)
+		if err != nil {
+			il.Crit("Unable to connect to the queue", "error", err)
+			return
+		}
+
+		il.Info("Connected to the NSQ queue")
+		qu = nqu
+	case config.Memory:
+		mqu, err := queue.NewMemory()
+		if err != nil {
+			il.Crit("Unable to connect to the queue", "error", err)
+			return
+		}
+
+		il.Info("Configured an in-memory queue")
+		qu = mqu
+	}
+
 	_ = st
+	_ = qu
 }

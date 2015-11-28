@@ -85,11 +85,16 @@ func (v *Validator) Validate(is interface{}) error {
 
 	// Check queue settings
 	if s.Queue == NSQ {
-		if _, err := net.ResolveTCPAddr("tcp", s.NSQ.ServerAddress); err != nil {
-			return err
+		for _, addr := range s.NSQ.ServerAddresses {
+			if _, err := net.ResolveTCPAddr("tcp", addr); err != nil {
+				return err
+			}
 		}
-		if _, err := net.ResolveTCPAddr("tcp", s.NSQ.LookupdAddress); err != nil {
-			return err
+
+		for _, addr := range s.NSQ.LookupdAddresses {
+			if _, err := net.ResolveTCPAddr("tcp", addr); err != nil {
+				return err
+			}
 		}
 	} else if s.Queue == Memory {
 		// no settings yet
