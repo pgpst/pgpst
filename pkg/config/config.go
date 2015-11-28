@@ -27,6 +27,7 @@ type Config struct {
 type APIConfig struct {
 	Enabled bool   `default:"false"`
 	Address string `default:"0.0.0.0:6030"`
+	URL     string `default:"http://127.0.0.1"`
 }
 
 // Mailer settings

@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"gopkg.in/igm/sockjs-go.v2/sockjs"
 	log "gopkg.in/inconshreveable/log15.v2"
 
 	"code.pgp.st/pgpst/pkg/config"
@@ -39,7 +40,7 @@ func NewAPI(cf config.APIConfig, db database.Database, qu queue.Queue, st storag
 	ap.Router.Use(Recovery())
 
 	ap.Router.GET("/", ap.hello)
-	ap.Router.GET("/ws", ap.ws)
+	ap.Router.Any("/ws", gin.WrapH(sockjs.NewHandler("/ws", sockjs.DefaultOptions, ap.ws)))
 
 	return ap, nil
 }
