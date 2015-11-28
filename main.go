@@ -6,6 +6,7 @@ import (
 	"github.com/koding/multiconfig"
 	log "gopkg.in/inconshreveable/log15.v2"
 
+	"code.pgp.st/pgpst/pkg/api"
 	"code.pgp.st/pgpst/pkg/config"
 	"code.pgp.st/pgpst/pkg/database"
 	"code.pgp.st/pgpst/pkg/queue"
@@ -133,6 +134,21 @@ func main() {
 		qu = mqu
 	}
 
-	_ = st
-	_ = qu
+	// Start the API server
+	ap, err := api.NewAPI(cfg.API, db, qu, st)
+	if err != nil {
+		il.Crit("Unable to load the API server", "error", err)
+		return
+	}
+	go func() {
+		if err := ap.Start(); err != nil {
+			il.Crit("Failed to start the API server", "error", err)
+		}
+	}()
+
+	x := make(chan struct{})
+	select {
+	case <-x:
+		return
+	}
 }
