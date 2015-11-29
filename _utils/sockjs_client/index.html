@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>pgp.st sjs service client</title>
+
+	<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<style>
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>pgp.st sjs service client</h1>
+
+		<h2>Request</h2>
+
+		<form class="request">
+			<div class="form-group">
+				<select class="form-control method">
+					<option>GET</option>
+					<option>POST</option>
+					<option>PUT</option>
+					<option>DELETE</option>
+				</select>
+			</div>
+
+			<div class="form-group">
+				<input type="text" class="form-control path" placeholder="endpoint">
+			</div>
+
+			<div class="form-group">
+				<textarea class="form-control body" placeholder="request body"></textarea>
+			</div>
+
+			<div class="form-group">
+				<textarea class="form-control headers" placeholder="headers"></textarea>
+			</div>
+
+			<button type="submit" class="btn btn-primary">Run</button>
+		</form>
+
+		<h2>Response</h2>
+
+		<pre class="response">Waiting...</pre>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
+	<script>
+		$(function() {
+			var sjs = new SockJS("http://127.0.0.1:6030/v1/ws");
+			sjs.onopen = function() {
+				console.log("sjs connection estabilished");
+			};
+			sjs.onclose = function() {
+				console.log("sjs connection terminated");
+			};
+			sjs.onmessage = function(e) {
+				var msg = JSON.parse(e.data);
+
+				var mh = "";
+				$.each(msg.response.headers, function(key, value) {
+					mh += "\t" + key + ": " + value + "\n"; 
+				});
+
+				$(".response").text("Code:\n\t" + msg.response.code + "\nHeaders:\n" + mh + "Body:\n\t" + msg.response.body);
+			};
+
+			$(".request").submit(function(e) {
+				e.preventDefault();
+
+				var method = $(".method").val();
+				var path = $(".path").val();
+				var body = $(".body").val();
+				var headers = $(".headers").val();
+
+				var ph = {};
+				var hp = headers.split("\n");
+				for (var i = 0; i < hp.length; i++) {
+					var h2 = hp[i].split(": ");
+					ph[h2[0]] = h2[1];
+				}
+
+				sjs.send(JSON.stringify({
+					"id": 123,
+					"method": "request",
+					"params": {
+						"method": method,
+						"path": path,
+						"body": body,
+						"headers": ph
+					}
+				}));
+
+				console.log(method);
+				console.log(path);
+				console.log(body);
+				console.log(headers);
+			});
+		});
+	</script>
+</body>
+</html>

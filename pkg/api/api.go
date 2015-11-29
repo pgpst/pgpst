@@ -40,7 +40,12 @@ func NewAPI(cf config.APIConfig, db database.Database, qu queue.Queue, st storag
 	ap.Router.Use(Recovery())
 
 	ap.Router.GET("/", ap.hello)
-	ap.Router.Any("/ws", gin.WrapH(sockjs.NewHandler("/ws", sockjs.DefaultOptions, ap.ws)))
+
+	v1 := ap.Router.Group("/v1")
+	{
+		//v1.Group("/ws/*path").Use(gin.WrapH(sockjs.NewHandler("/v1/ws", sockjs.DefaultOptions, ap.ws)))
+		v1.GET("/ws/*path", gin.WrapH(sockjs.NewHandler("/v1/ws", sockjs.DefaultOptions, ap.ws)))
+	}
 
 	return ap, nil
 }
