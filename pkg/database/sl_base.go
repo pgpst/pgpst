@@ -1,18 +1,18 @@
 package database
 
 import (
-	"database/sql"
 	"os/user"
 	"path/filepath"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 
 	"code.pgp.st/pgpst/pkg/config"
 )
 
 type SQLite struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }
 
 func NewSQLite(cfg config.SQLiteConfig) (*SQLite, error) {
@@ -29,7 +29,7 @@ func NewSQLite(cfg config.SQLiteConfig) (*SQLite, error) {
 		}
 	}
 
-	db, err := sql.Open("sqlite3", cfg.ConnectionString)
+	db, err := sqlx.Connect("sqlite3", cfg.ConnectionString)
 	if err != nil {
 		return nil, err
 	}

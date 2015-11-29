@@ -1,18 +1,18 @@
 package database
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 
 	"code.pgp.st/pgpst/pkg/config"
-	_ "github.com/lib/pq"
 )
 
 type Postgres struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }
 
 func NewPostgres(cfg config.PostgresConfig) (*Postgres, error) {
-	db, err := sql.Open("postgres", cfg.ConnectionString)
+	db, err := sqlx.Connect("postgres", cfg.ConnectionString)
 	if err != nil {
 		return nil, err
 	}

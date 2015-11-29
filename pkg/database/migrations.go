@@ -1,21 +1,21 @@
 package database
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 
 	"code.pgp.st/pgpst/pkg/config"
 )
 
 type migration struct {
 	Name    string
-	Migrate map[config.Database]func(*sql.DB) error
+	Migrate map[config.Database]func(*sqlx.DB) error
 }
 
 var Migrations = []migration{
 	{
 		Name: "create_tables",
-		Migrate: map[config.Database]func(*sql.DB) error{
-			config.Postgres: func(db *sql.DB) error {
+		Migrate: map[config.Database]func(*sqlx.DB) error{
+			config.Postgres: func(db *sqlx.DB) error {
 				if _, err := db.Exec(`
 					CREATE TABLE accounts (
 						id            char(20) primary key,
@@ -62,6 +62,15 @@ var Migrations = []migration{
 						body          text
 					);
 
+					CREATE TABLE labels (
+						id            char(20) primary key,
+						date_created  timestamp with time zone,
+						date_modified timestamp with time zone,
+						owner         char(20),
+						name          text,
+						is_system     bool
+					);
+
 					CREATE TABLE public_keys (
 						id            char(16) primary key,
 						fingerprint   char(40),
@@ -73,15 +82,6 @@ var Migrations = []migration{
 						algorithm     int,
 						length        int,
 						identities    json
-					);
-
-					CREATE TABLE labels (
-						id            char(20) primary key,
-						date_created  timestamp with time zone,
-						date_modified timestamp with time zone,
-						owner         char(20),
-						name          text,
-						is_system     bool
 					);
 
 					CREATE TABLE resources (
@@ -194,7 +194,7 @@ var Migrations = []migration{
 				}
 				return nil
 			},
-			config.SQLite: func(db *sql.DB) error {
+			config.SQLite: func(db *sqlx.DB) error {
 				if _, err := db.Exec(`
 					CREATE TABLE accounts (
 						id            character(20) primary key,

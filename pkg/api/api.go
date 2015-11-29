@@ -43,8 +43,11 @@ func NewAPI(cf config.APIConfig, db database.Database, qu queue.Queue, st storag
 
 	v1 := ap.Router.Group("/v1")
 	{
-		//v1.Group("/ws/*path").Use(gin.WrapH(sockjs.NewHandler("/v1/ws", sockjs.DefaultOptions, ap.ws)))
+		// WebSockets handler
 		v1.GET("/ws/*path", gin.WrapH(sockjs.NewHandler("/v1/ws", sockjs.DefaultOptions, ap.ws)))
+
+		// Public routes
+		v1.POST("/accounts", ap.createAccount)
 	}
 
 	return ap, nil
